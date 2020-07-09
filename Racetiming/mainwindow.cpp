@@ -136,7 +136,6 @@ void MainWindow::deleteParticipant()
 {
     const int participantIndex = GetParticipantIndex(*QObject::sender());
     m_participants.erase(m_participants.begin() + participantIndex);
-    auto& participant = m_participantWidgets[participantIndex];
     m_participantWidgets.erase(m_participantWidgets.begin() + participantIndex);
     updateParticipantList();
 }
