@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QTextStream>
+#include <QDateTime>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -26,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent)
         m_timeLabels.push_back(new QLabel("Lap " + QString::number(i)));
     }
     m_totalTimeLabel = new QLabel("Total time");
+
+    m_activeRunnersDialog = new QDialog(this);
+    m_activeRunnersDialog->showNormal();
 }
 
 void MainWindow::updateTime()
@@ -34,7 +38,7 @@ void MainWindow::updateTime()
     ui->masterTimeLabel->setText(time.toString("HH:mm:ss"));
 
     const QString timeString = time.toString("HH:mm:ss.zzz");
-
+    int activeParticipantIndex = 0;
     for (unsigned int participantIndex = 0; participantIndex < m_participants.size(); participantIndex++) {
         auto& participant = m_participants[participantIndex];
         if (participant.active) {
@@ -49,6 +53,9 @@ void MainWindow::updateTime()
             QString str = QString("%1:%2.%3").arg(mins, 2, 10, QChar('0')).arg(secs, 2, 10, QChar('0')).arg(msecs, 3, 10, QChar('0'));
 
             m_participantWidgets[participantIndex].totalTime->setText(str);
+
+            QString coarsestr = QString("%1:%2.%3").arg(mins, 2, 10, QChar('0')).arg(secs, 2, 10, QChar('0')).arg(msecs/100);
+            m_activeRunnerWidgets[activeParticipantIndex++].m_timeLabel->setText(coarsestr);
         }
     }
 }
@@ -94,6 +101,7 @@ void MainWindow::addParticipant(const QString& id, const QString& name)
     totalTimeLineEdit->setProperty("participant", participantIndex);
 
     m_participantWidgets.push_back({deleteButton, idLineEdit, nameLineEdit, lapPushButton, finishedPushButton, times, totalTimeLineEdit});
+
     updateParticipantList();
 }
 
@@ -117,6 +125,9 @@ void MainWindow::participantLapped()
 
     m_participantWidgets[participantIndex].times.push_back(new QLineEdit());
     updateParticipantList();
+
+    QString filename = QDateTime::currentDateTime().toString() + ".csv";
+    saveParticipantTimes(QDir::currentPath() + QDir::separator() + filename);
 }
 
 void MainWindow::participantFinished()
@@ -124,6 +135,9 @@ void MainWindow::participantFinished()
     const int participantIndex = GetParticipantIndex(*QObject::sender());
     m_participants[participantIndex].active = false;
     updateParticipantList();
+
+    QString filename = QDateTime::currentDateTime().toString() + ".csv";
+    saveParticipantTimes(QDir::currentPath() + QDir::separator() + filename);
 }
 
 void MainWindow::on_addParticipantButton_clicked()
@@ -157,6 +171,13 @@ void MainWindow::participantIDChanged(const QString &newID)
 void MainWindow::updateParticipantList()
 {
     QGridLayout* layout = new QGridLayout;
+    QGridLayout* activeRunnerLayout = new QGridLayout;
+    for (auto& widgets : m_activeRunnerWidgets) {
+        delete widgets.m_nameLabel;
+        delete widgets.m_timeLabel;
+    }
+    m_activeRunnerWidgets.clear();
+    int activeRunnerRow = 0;
 
     for (unsigned int participantIndex = 0; participantIndex < m_participantWidgets.size(); participantIndex++) {
         int column = 0;
@@ -179,6 +200,20 @@ void MainWindow::updateParticipantList()
             for (unsigned int timeIndex = 0; timeIndex < widgets.times.size(); timeIndex++)
                 widgets.times[timeIndex]->setStyleSheet("font: bold;");
             widgets.totalTime->setStyleSheet("font: bold;");
+
+            QLabel* nameLabel = new QLabel(m_activeRunnersDialog);
+            QFont font = nameLabel->font();
+            font.setPointSize(72);
+            nameLabel->setFont(font);
+            nameLabel->setText(m_participants[participantIndex].name);
+
+            QLabel* timeLabel = new QLabel(m_activeRunnersDialog);
+            timeLabel->setFont(font);
+
+            m_activeRunnerWidgets.push_back({nameLabel, timeLabel});
+            activeRunnerLayout->addWidget(m_activeRunnerWidgets.back().m_nameLabel, activeRunnerRow, 0);
+            activeRunnerLayout->addWidget(m_activeRunnerWidgets.back().m_timeLabel, activeRunnerRow, 1);
+            activeRunnerRow++;
         } else {
             widgets.nameLineEdit->setStyleSheet("");
             widgets.lapPushButton->setStyleSheet("");
@@ -197,6 +232,9 @@ void MainWindow::updateParticipantList()
 
     delete ui->participantsGroupBox->layout();
     ui->participantsGroupBox->setLayout(layout);
+
+    delete m_activeRunnersDialog->layout();
+    m_activeRunnersDialog->setLayout(activeRunnerLayout);
 }
 
 void MainWindow::saveParticipants(const QString& path)

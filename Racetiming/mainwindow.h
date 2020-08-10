@@ -68,6 +68,15 @@ private:
 
     std::vector<ParticipantWidgets> m_participantWidgets;
 
+
+    struct ActiveRunnerWidgets {
+        QLabel* m_nameLabel;
+        QLabel* m_timeLabel;
+    };
+
+    std::vector<ActiveRunnerWidgets> m_activeRunnerWidgets;
+    QDialog* m_activeRunnersDialog;
+
     QTimer m_timer;
 
     void addParticipant(const QString& id, const QString& name);
