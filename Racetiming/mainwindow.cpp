@@ -43,18 +43,30 @@ void MainWindow::updateTime()
         auto& participant = m_participants[participantIndex];
         if (participant.active) {
             participant.times.back() = time;
-            m_participantWidgets[participantIndex].times.back()->setText(timeString);
 
-            auto totalTime = participant.times.front().msecsTo(time);
-            int mins = totalTime / 60 / 1000;
-            int secs = (totalTime / 1000) % 60;
-            int msecs = totalTime % 1000;
+            if (participant.times.size() > 1) {
+                const auto diffTime = (participant.times.end() - 2)->msecsTo(*(participant.times.end()-1));
+                const int mins = diffTime / 60 / 1000;
+                const int secs = (diffTime / 1000) % 60;
+                const int msecs = diffTime % 1000;
 
-            QString str = QString("%1:%2.%3").arg(mins, 2, 10, QChar('0')).arg(secs, 2, 10, QChar('0')).arg(msecs, 3, 10, QChar('0'));
+                const QString lapTimeStr = QString("%1:%2.%3").arg(mins, 2, 10, QChar('0')).arg(secs, 2, 10, QChar('0')).arg(msecs, 3, 10, QChar('0'));
+                m_participantWidgets[participantIndex].times.back()->setText(timeString + " (" + lapTimeStr + ")");
+            } else {
+                m_participantWidgets[participantIndex].times.back()->setText(timeString);
+            }
+
+
+            const auto totalTime = participant.times.front().msecsTo(time);
+            const int mins = totalTime / 60 / 1000;
+            const int secs = (totalTime / 1000) % 60;
+            const int msecs = totalTime % 1000;
+
+            const QString str = QString("%1:%2.%3").arg(mins, 2, 10, QChar('0')).arg(secs, 2, 10, QChar('0')).arg(msecs, 3, 10, QChar('0'));
 
             m_participantWidgets[participantIndex].totalTime->setText(str);
 
-            QString coarsestr = QString("%1:%2.%3").arg(mins, 2, 10, QChar('0')).arg(secs, 2, 10, QChar('0')).arg(msecs/100);
+            const QString coarsestr = QString("%1:%2.%3").arg(mins, 2, 10, QChar('0')).arg(secs, 2, 10, QChar('0')).arg(msecs/100);
             m_activeRunnerWidgets[activeParticipantIndex++].m_timeLabel->setText(coarsestr);
         }
     }
@@ -126,7 +138,7 @@ void MainWindow::participantLapped()
     m_participantWidgets[participantIndex].times.push_back(new QLineEdit());
     updateParticipantList();
 
-    QString filename = QDateTime::currentDateTime().toString() + ".csv";
+    QString filename = QDateTime::currentDateTime().toString("hh-mm-ss") + ".csv";
     saveParticipantTimes(QDir::currentPath() + QDir::separator() + filename);
 }
 
@@ -136,7 +148,7 @@ void MainWindow::participantFinished()
     m_participants[participantIndex].active = false;
     updateParticipantList();
 
-    QString filename = QDateTime::currentDateTime().toString() + ".csv";
+    QString filename = QDateTime::currentDateTime().toString("hh-mm-ss") + ".csv";
     saveParticipantTimes(QDir::currentPath() + QDir::separator() + filename);
 }
 
@@ -311,10 +323,8 @@ void MainWindow::on_actionSave_participants_triggered()
 void MainWindow::on_actionLoad_participants_triggered()
 {
     QString path = QFileDialog::getOpenFileName(this, "Choose file");
-    if (!path.isNull()) {
+    if (!path.isNull())
         loadParticipants(path);
-        QMessageBox::information(this, "Loaded participants", "Loaded participants from " + path);
-    }
 }
 
 void MainWindow::on_actionSave_times_to_CSV_triggered()
