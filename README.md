@@ -1,5 +1,7 @@
 # Racetiming
-Very simple running race timing application written in QT
+Very simple running race timing application written in QT.
+
+Buggy as hell :D
 
 # Usage
 It is so simple it should be pretty much self-explanatory.
