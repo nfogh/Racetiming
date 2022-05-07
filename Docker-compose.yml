@@ -1,7 +1,9 @@
 version: '3.6'
 services:
   db:
-    image: mysql:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.db
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: e9w86036f78sd9
@@ -18,7 +20,9 @@ services:
       PMA_USER: root
       PMA_PASSWORD: e9w86036f78sd9
   www:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.www
     depends_on:
     - db
     volumes:
