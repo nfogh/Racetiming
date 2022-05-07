@@ -1,0 +1,6 @@
+FROM mysql:latest
+
+ENV MYSQL_DATABASE=racetiming \
+    MYSQL_ROOT_PASSWORD=e9w86036f78sd9
+	
+ADD data/initdb.sql /docker-entrypoint-initdb.d
