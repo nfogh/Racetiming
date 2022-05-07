@@ -29,5 +29,5 @@
             <td><input type=text name=number></td>
     </tr>
 </table>
-<input type=submit name=create value=Create>
+<input type=submit class="button" name=create value=Create>
 </form>
