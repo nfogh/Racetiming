@@ -30,6 +30,35 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_activeRunnersDialog = new QDialog(this);
     m_activeRunnersDialog->showNormal();
+
+    m_teamIndices = {0, 5, 10, 15, 20, 25};
+
+    connect(&m_serialPort, &QSerialPort::readyRead, this, &MainWindow::serialPort_readyRead);
+}
+
+void MainWindow::serialPort_readyRead()
+{
+    if (m_serialPort.canReadLine()) {
+        const auto data = m_serialPort.readLine();
+        const auto string = QString::fromUtf8(data);
+
+        bool ok = false;
+        const auto index = string.toInt(&ok) - 2;
+        if (ok) {
+            if (index >= 6) {
+                const auto team = index - 6;
+                // Next runner start or new lap
+                qDebug() << "Team" << team << "- Next runner start or new lap";
+                participantLapped(m_teamIndices[team]);
+            } else {
+                const auto team = index;
+                // Most recent runner stop
+                qDebug() << "Team" << team << "- Most recent runner stop";
+                participantFinished(m_teamIndices[team]);
+                m_teamIndices[team]++;
+            }
+        }
+    }
 }
 
 void MainWindow::updateTime()
@@ -122,10 +151,11 @@ static int GetParticipantIndex(const QObject& object)
     return object.property("participant").toInt();
 }
 
-void MainWindow::participantLapped()
+void MainWindow::participantLapped(int participantIndex)
 {
     const auto time = QTime::currentTime();
-    const int participantIndex = GetParticipantIndex(*QObject::sender());
+    if (participantIndex == -1)
+        participantIndex = GetParticipantIndex(*QObject::sender());
     if (m_participants[participantIndex].times.size() == 1)
         m_participants[participantIndex].times.back() = time;
 
@@ -142,9 +172,10 @@ void MainWindow::participantLapped()
     saveParticipantTimes(QDir::currentPath() + QDir::separator() + filename);
 }
 
-void MainWindow::participantFinished()
+void MainWindow::participantFinished(int participantIndex)
 {
-    const int participantIndex = GetParticipantIndex(*QObject::sender());
+    if (participantIndex == -1)
+        participantIndex = GetParticipantIndex(*QObject::sender());
     m_participants[participantIndex].active = false;
     updateParticipantList();
 
@@ -334,4 +365,12 @@ void MainWindow::on_actionSave_times_to_CSV_triggered()
         saveParticipantTimes(path);
         QMessageBox::information(this, "Saved times", "Saved participant times to " + path);
     }
+}
+
+void MainWindow::on_actionAutotimer_triggered()
+{
+    m_serialPort.setPortName("/dev/ttyACM0");
+    m_serialPort.setBaudRate(QSerialPort::Baud9600);
+    if (!m_serialPort.open(QIODevice::ReadOnly))
+        QMessageBox::warning(this, "Cannot open port", "Cannot open " + m_serialPort.portName() + " for reading. " + m_serialPort.errorString());
 }

@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QToolButton>
+#include <QSerialPort>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -28,8 +29,8 @@ private slots:
     void on_addParticipantButton_clicked();
 
     void deleteParticipant();
-    void participantLapped();
-    void participantFinished();
+    void participantLapped(int index = -1);
+    void participantFinished(int index = -1);
     void participantNameChanged(const QString& newName);
     void participantIDChanged(const QString& newID);
 
@@ -39,7 +40,13 @@ private slots:
 
     void on_actionLoad_participants_triggered();
 
+    void on_actionAutotimer_triggered();
+
+    void serialPort_readyRead();
+
 private:
+    QVector<int> m_teamIndices;
+
     Ui::MainWindow *ui;
 
     QLabel* m_idLabel;
@@ -76,6 +83,8 @@ private:
 
     std::vector<ActiveRunnerWidgets> m_activeRunnerWidgets;
     QDialog* m_activeRunnersDialog;
+
+    QSerialPort m_serialPort;
 
     QTimer m_timer;
 

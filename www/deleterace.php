@@ -1,31 +1,42 @@
-<html>
- <head>
-  <title>PHP Test</title>
- </head>
- <body>
+<?php
+$title = 'Delete race';
+$masthead_image = 'assets/races/smormosen.jpg';
+$masthead_text = 'Race admin';
 
- <?php
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
-
-$ids = [];
-foreach ($_POST['check'] as $id => $value) {
-    array_push($ids, $id);
-    // do stuff with your database
-}
-
-$sql = "DELETE FROM races WHERE id IN (" . implode(", ", $ids) . ")";
-
-printf("<h1>Delete races %s</h1>", implode(", ", $ids));
-
-if (!$db->query($sql)) {
-    printf("<h2>Unable to delete race. " . $db->error . "</h2>");
-}
-require "listraces.php"
+require '_init.php';
 ?>
 
 <?php
+    if (empty($_POST['check'])) {
+        $errorstring = "No races selected for deletion";
+    }
 
-require "insertrace.php"
+    if (empty($errorstring)) {
+    $ids = [];
+    foreach ($_POST['check'] as $id => $value)
+        array_push($ids, $id);
+
+    $res = $db->query('DELETE FROM races WHERE id IN (' . implode(', ', $ids) . ')');
+    if (!$res) {
+        $errorstring = 'Unable to delete race. ' . $db->error;
+    } else {
+        if ($db->affected_rows != count($ids))
+            $errorstring = 'Unable to delete all races (' . implode(', ', $ids) . '). One or more of the races was not found.';
+        else {
+            $successstring = 'Deleted races with id ' . implode(", ", $ids) . ' ' . $res->num_rows;
+        }
+    }
+}
+
+    require '_header.php';
+
+    if (!empty($successstring))
+        print('<div class="callout large success"><h5>' . $successstring . '</h5></div>');
+
+    if (!empty($errorstring))
+        print('<div class="callout large success"><h5>' . $errorstring . '</h5></div>');
 ?>
- </body>
-</html>
+
+<?php require 'listraces.php' ?>
+<?php require "insertrace.php" ?>
+<?php require '_footer.php' ?>

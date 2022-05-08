@@ -1,40 +1,62 @@
-<html>
- <head>
-  <title>PHP Test</title>
- </head>
- <body>
+<?php
+$title = 'Add race';
+$masthead_image = 'assets/races/smormosen.jpg';
+$masthead_text = "Race admin";
 
- <?php
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
-$name = mysqli_real_escape_string($db, htmlspecialchars($_POST["name"]));
-$description = mysqli_real_escape_string($db, htmlspecialchars($_POST["description"]));
-$start = mysqli_real_escape_string($db, htmlspecialchars($_POST["start"]));
-$finish = mysqli_real_escape_string($db, htmlspecialchars($_POST["finish"]));
-$address = mysqli_real_escape_string($db, htmlspecialchars($_POST["address"]));
-$latitude = mysqli_real_escape_string($db, htmlspecialchars($_POST["latitude"]));
-$longitude = mysqli_real_escape_string($db, htmlspecialchars($_POST["longitude"]));
-
-print_r($_POST);
-
-printf("<h1>Inserted race %s</h1>", $racename);
-
-$sql = 'INSERT INTO races (name, description, start, finish, address, gpscoords) VALUES (' . 
-    '"' . $name .        '",' . 
-    '"' . $description . '",' . 
-    '"' . $start .       '",' . 
-    '"' . $finish .      '",' . 
-    '"' . $address .     '",' . 
-    'POINT(' . $latitude . ', ' . $longitude . '))';
-printf($sql);
-if (!$db->query($sql)) {
-    printf("<h2>Unable to insert new race. " . $db->error . "</h2>");
-}
-require "listraces.php"
+require '_init.php';
+require '_header.php';
 ?>
 
 <?php
+    if (empty($_POST['name']))
+        $errorstring  = 'The name of the race was not set';
+    $name = mysqli_real_escape_string($db, htmlspecialchars($_POST["name"]));
 
-require "insertrace.php"
+    if (empty($_POST['description']))
+        $errorstring = 'The description of the race was not set';
+    $description = mysqli_real_escape_string($db, htmlspecialchars($_POST["description"]));
+
+    if (empty($_POST['start']))
+        $errorstring = 'The start of the race was not set';
+    $start = mysqli_real_escape_string($db, htmlspecialchars($_POST["start"]));
+
+    if (empty($_POST['finish']))
+        $errorstring = 'The finish of the race was not set';
+    $finish = mysqli_real_escape_string($db, htmlspecialchars($_POST["finish"]));
+
+    if (empty($_POST['address']))
+        $errorstring = 'The address of the race was not set';
+    $address = mysqli_real_escape_string($db, htmlspecialchars($_POST["address"]));
+
+    if (empty($_POST['latitude']))
+        $errorstring = 'The latitude of the race was not set';
+    $latitude = mysqli_real_escape_string($db, htmlspecialchars($_POST["latitude"]));
+
+    if (empty($_POST['longitude']))
+        $errorstring  = 'The longitude of the race was not set';
+    $longitude = mysqli_real_escape_string($db, htmlspecialchars($_POST['longitude']));
+
+    if (!isset($errorstring)) {
+        $sql = 'INSERT INTO races (name, description, start, finish, address, gpscoords) VALUES (' . 
+            '"' . $name .        '",' . 
+            '"' . $description . '",' . 
+            '"' . $start .       '",' . 
+            '"' . $finish .      '",' . 
+            '"' . $address .     '",' . 
+            'POINT(' . $latitude . ', ' . $longitude . '))';
+
+        if (!$db->query($sql))
+            printf('<div class="callout large alert"><h5>Unable to insert new race. ' . $db->error . "</h5></div>");
+        else
+            printf('<div class="callout large success"><h5>Inserted race ' . $name . '</h5></div>');
+    } else {
+        print('<div class="callout large alert"><h5>Error: ' . $errorstring . '</h5></div>');
+    }
 ?>
- </body>
-</html>
+
+
+<?php require "listraces.php" ?>
+
+<?php require "insertrace.php" ?>
+
+<?php require '_footer.php' ?>

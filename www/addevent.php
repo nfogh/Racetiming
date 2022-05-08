@@ -1,5 +1,6 @@
 <?php
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
+    require '_init.php';
+    require '_header.php';
 
 if (!isset($_GET['apikey']))
     exit("Missing apikey parameter");

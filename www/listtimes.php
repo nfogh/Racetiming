@@ -1,13 +1,13 @@
 <?php
-    $db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming"); 
-    $now = new DateTime();
-?>
+    require '_init.php';
 
-<?php
-    $raceid = htmlspecialchars($_GET["raceid"]);
+    if (!isset($_GET['raceid']))
+        die("Raceid was not set");
+
+    $raceid = htmlspecialchars($_GET['raceid']);
     $raceid = mysqli_real_escape_string($db, $raceid);
 
-    if ($res = $db->query("SELECT name, description, address, start, finish, gpscoords from races WHERE id=" . $raceid)) {
+    if ($res = $db->query('SELECT name, description, address, start, finish, gpscoords from races WHERE id=' . $raceid)) {
         if ($row = $res->fetch_assoc()) {
             $name = $row["name"];
             $description = $row["description"];
@@ -16,85 +16,21 @@
             $finish = new DateTime($row["finish"]);
             $gpscoords = $row["gpscoords"];
         } else {
-            printf("Unable to find race with the id " + $raceid);
-            exit();
+            die("Unable to find race with the id " . $raceid);
         }
         $res->close();
+    } else {
+        die("Unable to excecute query");
     }
+
+    $title = 'Runner times for ' . $racename;
+    $masthead_image = 'assets/images/masthead.png';
+
+    require '_header.php';
+    $now = new DateTime();
 ?>
 
-<html>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/js/foundation.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.1.18/jquery.backstretch.min.js" crossorigin="anonymous"></script>
-<script src="https://polyfill.io/v3/polyfill.min.js?features=default" crossorigin="anonymous"></script>
-
-
-
-<script>
-// Initialize and add the map
-function initMap() {
-  // The location of Uluru
-  const uluru = { lat: -25.344, lng: 131.031 };
-  // The map, centered at Uluru
-  const map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 4,
-    center: uluru,
-  });
-  // The marker, positioned at Uluru
-  const marker = new google.maps.Marker({
-    position: uluru,
-    map: map,
-  });
-}
-
-window.initMap = initMap;    
-</script>
-
- <head>
-  <title>Runner times for <?= $racename ?></title>
- </head>
- <body>
-
- 
-<div class="top-bar">
-  <div class="top-bar-left">
-    <ul class="dropdown menu" data-dropdown-menu>
-      <li class="menu-text">BK Health timing</li>
-      <li>
-        <a href="#">Races</a>
-        <ul class="menu vertical">
 <?php
-    if ($res = $db->query('SELECT name, id from races ORDER BY start DESC LIMIT 10')) {
-        while ($row = $res->fetch_assoc())
-            printf('<li><a href="/listtimes.php?raceid=' . $row['id'] . '">' . $row['name'] . '</a></li>');
-        $res->close();
-    }
-?>
-        </ul>
-      </li>
-    </ul>
-  </div>
-  <div class="top-bar-right">
-    <ul class="menu">
-      <li><a href="#">Info</a></li>
-      <li><a href="/admin.php">Admin</a></li>
-    </ul>
-  </div>
-</div>
-
- <div id="masthead">
-	<div class="row">
-		<div class="small-12 columns">
-            <div style="height: 200px; font-size: 100px;
-  padding-top: 25px; padding-left:100px; text-shadow: 3px 3px #000000;
-  color: #008700;"><?= $name ?></div>
-		</div><!-- /.small-12.columns -->
-	</div><!-- /.row -->
-</div><!-- /#masthead -->
-
- <?php
     // Get the highest number of laps to format the table
     if ($res = $db->query("SELECT runnerid, COUNT(*) as laps FROM events WHERE raceid=1 GROUP BY runnerid ORDER BY laps DESC LIMIT 1")) {
         if ($row = $res->fetch_assoc())
@@ -106,7 +42,7 @@ window.initMap = initMap;
 <?php
     // Get runner indexes for this run
     $runners = array();
-    if ($res = $db->query("SELECT runners.id as id, numbers.number as number, runners.name as name FROM numbers JOIN runners ON (runners.id = numbers.runnerid) WHERE numbers.raceid = " . $raceid . " ORDER BY number ASC")) {
+    if ($res = $db->query('SELECT runners.id as id, numbers.number as number, runners.name as name FROM numbers JOIN runners ON (runners.id = numbers.runnerid) WHERE numbers.raceid = ' . $raceid . ' ORDER BY number ASC')) {
         while ($row = $res->fetch_assoc())
             $runners[$row["number"]] = array(
                 'name' => $row['name'],
@@ -114,7 +50,7 @@ window.initMap = initMap;
             );
         $res->close();
     } else {
-        printf($db->error());
+        die($db->error);
     }
 ?>
 
