@@ -1,13 +1,15 @@
-<html>
- <head>
-  <title>PHP Test</title>
- </head>
- <body>
+<?php
+require '_init.php';
+require '_admin.php';
 
- <?php
-//   print_r($_POST);
+$title = 'Add RFID Tag';
+$masthead_image = 'assets/images/masthead.jpg';
+$masthead_text = "Race admin";
 
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
+require '_header.php';
+?>
+
+<?php
 $tid = htmlspecialchars($_POST["tid"]);
 $tid = mysqli_real_escape_string($db, $tid);
 
@@ -26,5 +28,5 @@ require "listtags.php"
 ?>
 
 <?php require "inserttag.php" ?>
- </body>
-</html>
+
+<?php require "_footer.php" ?>

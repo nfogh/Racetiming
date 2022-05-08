@@ -1,20 +1,29 @@
 <?php
     require '_init.php';
 
-    if (!isset($_GET['raceid']))
-        die("Raceid was not set");
+    if (!isset($_GET['raceid'])) {
+        $title = 'Select race';
+        $masthead_image = 'assets/races/smormosen.jpg';
+        $masthead_text = 'Select race';
 
+        require '_header.php';
+        printf('<div class="callout large">Please select a race from the dropdown');
+        require '_footer.php';
+        exit();
+    }
+ 
     $raceid = htmlspecialchars($_GET['raceid']);
     $raceid = mysqli_real_escape_string($db, $raceid);
 
-    if ($res = $db->query('SELECT name, description, address, start, finish, gpscoords from races WHERE id=' . $raceid)) {
+    if ($res = $db->query('SELECT name, description, address, start, finish, ST_X(gpscoords) as latitude, ST_Y(gpscoords) as longitude from races WHERE id=' . $raceid)) {
         if ($row = $res->fetch_assoc()) {
             $name = $row["name"];
             $description = $row["description"];
             $address = $row["address"];
             $start = new DateTime($row["start"]);
             $finish = new DateTime($row["finish"]);
-            $gpscoords = $row["gpscoords"];
+            $latitude = $row["latitude"];
+            $longitude = $row["longitude"];
         } else {
             die("Unable to find race with the id " . $raceid);
         }
@@ -23,8 +32,9 @@
         die("Unable to excecute query");
     }
 
-    $title = 'Runner times for ' . $racename;
-    $masthead_image = 'assets/images/masthead.png';
+    $title = 'Runner times for ' . $name;
+    $masthead_image = 'assets/races/smormosen.jpg';
+    $masthead_text = $name;
 
     require '_header.php';
     $now = new DateTime();
@@ -121,8 +131,15 @@
         <div class="panel callout radius">
             <?= $description ?>
             <div class="grid-x">
-                <div class='cell'>Start <?= $start->format("Y-m-d H:i:s") ?></div>
-                <div class='cell'>Finish <?= $finish->format("Y-m-d H:i:s") ?></div>
+                <div class="cell small-4"><h5>Start</h5></div>
+                <div class="cell small-8"><?= $start->format("Y-m-d H:i:s") ?></div>
+                <div class="cell small-4"><h5>Finish</h5></div>
+                <div class="cell small-8"><?= $finish->format("Y-m-d H:i:s") ?></div>
+                <div class="cell small-4"><h5>Address</h5></div>
+                <div class="cell small-8"><?= $address ?></div>
+                <div class="cell small-4"><h5>GPS coordinates</h5></div>
+                <div class="cell small-8"><?= $latitude ?>, <?= $longitude ?></div>
+                <div class="cell"><div id="map" style="width:100%; height:400px"></div></div>
             </div>
         </div>
     </div>
@@ -149,11 +166,26 @@
     </div>
 </div>
 
-<script>
-    $("#masthead").backstretch("/assets/races/smormosen.jpg", {fade: 700});
-    $(document).foundation();
+<script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDACthgF53sdT7EO2ZdlBFqzdnDMK6LpAo&callback=initMap">
 </script>
 
-</body>
+<script>
+function initMap() {
+  const race = { lat: <?= $latitude ?>, lng: <?= $longitude ?> };
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 15,
+    center: race,
+  });
 
-</html>
+  const marker = new google.maps.Marker({
+    position: race,
+    map: map,
+  });
+}
+
+window.initMap = initMap;
+</script>
+
+<?php require '_footer.php' ?>
+

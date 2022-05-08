@@ -1,9 +1,11 @@
 <?php
+require '_init.php';
+require '_admin.php';
+
 $title = 'Add race';
-$masthead_image = 'assets/races/smormosen.jpg';
+$masthead_image = 'assets/images/masthead.jpg';
 $masthead_text = "Race admin";
 
-require '_init.php';
 require '_header.php';
 ?>
 

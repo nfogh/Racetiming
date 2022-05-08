@@ -1,13 +1,12 @@
-<html>
- <head>
-  <title>PHP Test</title>
- </head>
- <body>
+<?php
+$title = 'Add number';
+$masthead_image = 'assets/images/masthead.jpg';
+$masthead_text = "Race admin";
+require '_init.php';
+require '_header.php';
+?>
 
- <?php
-//   print_r($_POST);
-
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
+<?php
 $runnerid = htmlspecialchars($_POST["runnerid"]);
 $runnerid = mysqli_real_escape_string($db, $runnerid);
 
@@ -28,5 +27,5 @@ require "listnumbers.php"
 ?>
 
 <?php require "insertnumber.php" ?>
- </body>
-</html>
+
+<?php require '_footer.php' ?>

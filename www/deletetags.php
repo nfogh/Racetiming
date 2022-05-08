@@ -1,12 +1,13 @@
-<html>
- <head>
-  <title>Admin</title>
- </head>
- <body>
+<?php
+$title = 'Delete tags';
+$masthead_image = 'assets/races/smormosen.jpg';
+$masthead_text = 'Race admin';
+
+require '_adminpage.php';
+require '_init.php';
+?>
 
  <?php
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
-
 $ids = [];
 foreach ($_POST['check'] as $id => $value)
     array_push($ids, "0x$id");
@@ -24,5 +25,5 @@ if (!$db->query($sql)) {
 require "listtags.php";
 require "inserttag.php";
 ?>
- </body>
-</html>
+
+<?php require '_footer.php' ?>

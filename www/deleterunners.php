@@ -1,12 +1,13 @@
-<html>
- <head>
-  <title>Admin</title>
- </head>
- <body>
+<?php
+$title = 'Delete runners';
+$masthead_image = 'assets/races/smormosen.jpg';
+$masthead_text = 'Race admin';
 
- <?php
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
+require '_adminpage.php';
+require '_init.php';
+?>
 
+<?php
 $ids = [];
 foreach ($_POST['check'] as $id => $value)
     array_push($ids, $id);
@@ -21,9 +22,6 @@ if (!$db->query($sql)) {
 require "listrunners.php"
 ?>
 
-<?php
+<?php require "insertrunner.php" ?>
 
-require "insertrunner.php"
-?>
- </body>
-</html>
+<?php require '_footer.php' ?>

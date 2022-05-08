@@ -1,11 +1,15 @@
-<html>
- <head>
-  <title>PHP Test</title>
- </head>
- <body>
+<?php
+require '_init.php';
+require '_admin.php';
 
- <?php
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
+$title = 'Add runner';
+$masthead_image = 'assets/images/masthead.jpg';
+$masthead_text = "Race admin";
+
+require '_header.php';
+?>
+
+<?php
 $runnername = htmlspecialchars($_POST["runnername"]);
 $runnername = mysqli_real_escape_string($db, $runnername);
 
@@ -21,6 +25,5 @@ else {
 require "listrunners.php"
 ?>
 
-<?php require "insertrunner.php" ?>
- </body>
-</html>
+<?php require "insertrunner.php"; ?>
+<?php require '_footer.php'; ?>

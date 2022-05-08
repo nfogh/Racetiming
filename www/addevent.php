@@ -1,7 +1,4 @@
 <?php
-    require '_init.php';
-    require '_header.php';
-
 if (!isset($_GET['apikey']))
     exit("Missing apikey parameter");
 $apikey = htmlspecialchars($_GET["apikey"]);
@@ -41,6 +38,4 @@ if ($db->query($sql)) {
 } else {
     printf("Error " . $db->error . ". SQL: " . $sql);
 }
-
-
 ?>

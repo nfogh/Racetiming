@@ -32,7 +32,12 @@
   </div>
   <div class="top-bar-right">
     <ul class="menu">
-      <li><a href="#">Info</a></li>
+      <li><a href="/admin.php">Admin</a></li>
+      <?php
+      if ($_SESSION['loggedin'])
+        printf('<li><a href="/logout.php">Log out</a></li>');
+      ?>
+      <li><a href="/info.php">Info</a></li>
     </ul>
   </div>
 </div>

@@ -1,8 +1,9 @@
 <?php
 $title = 'Admin interface';
-$masthead_image = 'assets/images/masthead.png';
-
+$masthead_image = 'assets/images/masthead.jpg';
+$masthead_text = "BK Health";
 require '_init.php';
+require '_adminpage.php';
 require '_header.php';
 ?>
 
