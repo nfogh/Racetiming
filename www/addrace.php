@@ -1,6 +1,6 @@
 <?php
 require '_init.php';
-require '_admin.php';
+require '_adminpage.php';
 
 $title = 'Add race';
 $masthead_image = 'assets/images/masthead.jpg';

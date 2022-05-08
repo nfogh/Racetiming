@@ -35,7 +35,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Validate credentials
     if(empty($username_err) && empty($password_err)) {
         if (!empty($config['admin']['name']) && !empty($config['admin']['password']) &&
-            ($config['admin']['name'] == $username) && ($config['admin']['password'] == $password)) {
+            ($config['admin']['name'] == $username) && password_verify($password, $config['admin']['password'])) {
                      $_SESSION["loggedin"] = true;
                      $_SESSION["id"] = -1;
                      $_SESSION["username"] = $username;                            
