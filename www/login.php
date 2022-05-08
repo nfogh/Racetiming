@@ -33,21 +33,26 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     }
     
     // Validate credentials
-    if(empty($username_err) && empty($password_err)){
-        // Prepare a select statement
+    if(empty($username_err) && empty($password_err)) {
+        if (!empty($config['admin']['name']) && !empty($config['admin']['password']) &&
+            ($config['admin']['name'] == $username) && ($config['admin']['password'] == $password)) {
+                     $_SESSION["loggedin"] = true;
+                     $_SESSION["id"] = -1;
+                     $_SESSION["username"] = $username;                            
+                     
+                     header("location: admin.php");
+        }
+
         $sql = 'SELECT name, password, id FROM admins WHERE name = "' . $username . '"';
         if ($res = $db->query($sql)) {
             if ($row = $res->fetch_assoc()) {
                 if (password_verify($password, $row['password'])) {
-                     // Store data in session variables
                      $_SESSION["loggedin"] = true;
                      $_SESSION["id"] = $id;
                      $_SESSION["username"] = $username;                            
                      
-                     // Redirect user to welcome page
                      header("location: admin.php");
                 } else {
-                     // Password is not valid, display a generic error message
                      $login_err = "Invalid username or password.";
                 }
             } else {
