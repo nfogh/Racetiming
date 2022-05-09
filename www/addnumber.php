@@ -7,16 +7,27 @@ require '_header.php';
 ?>
 
 <?php
-$runnerid = htmlspecialchars($_POST["runnerid"]);
-$runnerid = mysqli_real_escape_string($db, $runnerid);
+if (empty($_POST['runnerid']))
+    $errorstring  = 'The name ID the runner was not set';
+$runnerid = mysqli_real_escape_string($db, htmlspecialchars($_POST['runnerid']));
 
-$raceid = htmlspecialchars($_POST["raceid"]);
-$raceid = mysqli_real_escape_string($db, $raceid);
+if (empty($_POST['raceid']))
+    $errorstring  = 'The name ID the race was not set';
+$raceid = mysqli_real_escape_string($db, htmlspecialchars($_POST['raceid']));
 
-$number = htmlspecialchars($_POST["number"]);
-$number = mysqli_real_escape_string($db, $number);
+if (empty($_POST['number']))
+    $errorstring  = 'The number was not set';
+$number = mysqli_real_escape_string($db, htmlspecialchars($_POST['number']));
 
-$sql = "INSERT INTO numbers (raceid, runnerid, number) VALUES (" . $raceid . "," . $runnerid . ", " . $number . ")";
+if (empty($_POST['laps']))
+    $errorstring  = 'The number of laps was not set';
+$laps = mysqli_real_escape_string($db, htmlspecialchars($_POST['laps']));
+
+if (empty($_POST['time']))
+    $errorstring  = 'The expected time was not set';
+$time = mysqli_real_escape_string($db, htmlspecialchars($_POST['time']));
+
+$sql = "INSERT INTO numbers (raceid, runnerid, number, expected_laps, expected_time) VALUES ( {$raceid} , {$runnerid}, {$number}, {$laps}, {$time} )";
 if (!$db->query($sql)) {
     printf("<h2>Unable to insert new number. " . $db->error . "</h2>");
 }

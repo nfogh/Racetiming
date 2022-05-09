@@ -7,13 +7,13 @@
             <tr><td>ID</td><td>Name</td><td>Select</td></tr>
             <?php
                 if ($res = $db->query("SELECT id, name FROM races")) {
-                
-                
-                    while ($row = $res->fetch_row())
+                    while ($row = $res->fetch_assoc())
                     {
+                        $id = $row['id'];
+                        $name = $row['name'];
                         printf("<tr>");
-                        printf("<td>%s</td> <td>%s</td>\n", $row[0], $row[1]);
-                        printf("<td><input type=checkbox name=check[%s]></td>", $row[0]);
+                        printf("<td>{$id}</td> <td><a href='/editrace.php?id={$id}'>{$name}</a></td>\n");
+                        printf("<td><input type=checkbox name=check[{$id}]></td>");
                         printf("</tr>");
                     }
                 
