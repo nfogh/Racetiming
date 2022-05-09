@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: May 08, 2022 at 10:43 PM
+-- Generation Time: May 09, 2022 at 04:05 PM
 -- Server version: 8.0.29
 -- PHP Version: 8.0.15
 
@@ -59,7 +59,9 @@ CREATE TABLE `numbers` (
   `raceid` int NOT NULL,
   `runnerid` int NOT NULL,
   `number` int NOT NULL,
-  `id` int NOT NULL
+  `id` int NOT NULL,
+  `expected_laps` int DEFAULT '1',
+  `expected_time` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -121,7 +123,8 @@ CREATE TABLE `rfidtags` (
 
 CREATE TABLE `runners` (
   `id` int NOT NULL,
-  `name` varchar(256) NOT NULL
+  `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `surname` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --

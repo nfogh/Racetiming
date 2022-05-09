@@ -14,3 +14,13 @@ To do post-processing of the time, use the "save timing" menu option. It saves i
 
 # Screenshots
 ![](./Doc/Racetiming.png)
+
+# Docker
+Trying the webserver is easy if you install docker. Just run the command:
+
+docker-compose up
+
+And it should build the db, phpmyadmin and www images and run them.
+
+You will need to fill out the config file in www/config/config.ini before the site will work.
+There is an example in www/config/config_example.ini
