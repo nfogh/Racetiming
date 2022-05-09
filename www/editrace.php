@@ -17,7 +17,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($_POST['description']))
         $errorstring = 'The description of the race was not set';
-    $description = mysqli_real_escape_string($db, htmlspecialchars($_POST["description"]));
+    $description = mysqli_real_escape_string($db, $_POST["description"]);
 
     if (empty($_POST['start']))
         $errorstring = 'The start of the race was not set';
