@@ -167,7 +167,7 @@
 </div>
 
 <script async
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDACthgF53sdT7EO2ZdlBFqzdnDMK6LpAo&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=<?= $config['apikeys']['googlemaps'] ?> &callback=initMap">
 </script>
 
 <script>
