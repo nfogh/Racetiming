@@ -1,33 +1,40 @@
 <h1>Attach number</h1>
 <form action="addnumber.php" method=post>
-
-    <table>
-        <tr><td>Race</td><td>Runner</td><td>Number</td></tr>
-        <tr>
-            <td>
-                <select name="raceid">
-<?php
-    if ($res = $db->query("SELECT id, name FROM races")) {
-        while ($row = $res->fetch_row())
-            printf("<option value=\"%s\">[%s] %s</option>", $row[0], $row[0], $row[1]);
-        $res->close();
-    }
-?>
-                </select>
-            </td>
-            <td>
-                <select name="runnerid">
-<?php
-    if ($res = $db->query("SELECT id, name FROM runners")) {
-        while ($row = $res->fetch_row())
-            printf("<option value=\"%s\">[%s] %s</option>", $row[0], $row[0], $row[1]);
-        $res->close();
-    }
-?>
-                </select>
-            </td>
-            <td><input type=text name=number></td>
-    </tr>
-</table>
-<input type=submit class="button" name=create value=Create>
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+          <div class="medium-12 cell">
+            <table>
+                <tr><td>Race</td><td>Runner</td><td>Number</td><td>Number of laps</td><td>Expected time [min]</td></tr>
+                <tr>
+                    <td>
+                        <select name="raceid">
+                            <?php
+                                if ($res = $db->query("SELECT id, name FROM races")) {
+                                    while ($row = $res->fetch_assoc())
+                                        printf('<option value="' . $row['id'] . '">[' . $row['id'] . '] ' . $row['name'] . '</option>');
+                                    $res->close();
+                                }
+                            ?>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="runnerid">
+                            <?php
+                                if ($res = $db->query("SELECT id, name, surname FROM runners")) {
+                                    while ($row = $res->fetch_assoc())
+                                        printf("<option value={$row['id']}>[{$row['id']}] {$row['name']} {$row['surname']}</option>");
+                                    $res->close();
+                                }
+                            ?>
+                        </select>
+                    </td>
+                    <td><input type=number name=number value=1></td>
+                    <td><input type=number name=laps value=1></td>
+                    <td><input type=number name=time value=20></td>
+            </tr>
+        </table>
+        <input type=submit class="button" name=create value=Create>
+        </div>
+        </div>
+    </div>
 </form>

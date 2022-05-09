@@ -3,8 +3,8 @@ $title = 'Delete runners';
 $masthead_image = 'assets/races/smormosen.jpg';
 $masthead_text = 'Race admin';
 
-require '_adminpage.php';
 require '_init.php';
+require '_adminpage.php';
 ?>
 
 <?php
@@ -14,14 +14,19 @@ foreach ($_POST['check'] as $id => $value)
 
 $sql = "DELETE FROM runners WHERE id IN (" . implode(", ", $ids) . ")";
 
-printf("<h1>Delete runners %s</h1>", implode(", ", $ids));
-
-if (!$db->query($sql)) {
-    printf("<h2>Unable to delete runner. " . $db->error . "</h2>");
-}
-require "listrunners.php"
+if (!$db->query($sql))
+    $errorstring = "<h2>Unable to delete runner. " . $db->error . "</h2>";
 ?>
 
-<?php require "insertrunner.php" ?>
+<? require '_header.php' ?>
 
+<?php
+    if (isset($errorstring))
+        printf('<div class="callout large alert">' . $errorstring . '</div>');
+    else
+        printf('<div class="callout large success">Deleted runners with IDs ' . implode(", ", $ids) . "</div>");
+?>
+
+<?php require "listrunners.php" ?>
+<?php require "insertrunner.php" ?>
 <?php require '_footer.php' ?>

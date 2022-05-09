@@ -1,12 +1,10 @@
 <?php
-require '_init.php';
-require '_admin.php';
-
 $title = 'Delete numbers';
-$masthead_image = 'assets/images/masthead.jpg';
-$masthead_text = "Race admin";
+$masthead_image = 'assets/races/smormosen.jpg';
+$masthead_text = 'Race admin';
 
-require '_header.php';
+require '_init.php';
+require '_adminpage.php';
 ?>
 
 <?php
@@ -16,15 +14,19 @@ foreach ($_POST['check'] as $id => $value)
 
 $sql = "DELETE FROM numbers WHERE id IN (" . implode(", ", $ids) . ")";
 
-if (!$db->query($sql)) {
-    printf("<h2>Unable to delete number. " . $db->error . "</h2>");
-} else {
-    printf("<h1>Delete numbers %s</h1>", implode(", ", $ids));
-}
+if (!$db->query($sql))
+    $errorstring = "<h2>Unable to delete numbers. " . $db->error . "</h2>";
 ?>
 
+<? require '_header.php' ?>
+
 <?php
-require "listnumbers.php";
-require "insertnumbers.php";
+    if (isset($errorstring))
+        printf('<div class="callout large alert">' . $errorstring . '</div>');
+    else
+        printf('<div class="callout large success">Deleted numbers with IDs ' . implode(", ", $ids) . "</div>");
 ?>
+
+<?php require 'listnumbers.php' ?>
+<?php require 'insertnumber.php' ?>
 <?php require '_footer.php' ?>

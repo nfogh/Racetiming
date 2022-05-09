@@ -87,42 +87,60 @@
         <table class="hover" width="80%">
         <thead>
             <tr><th width=100>Number</th><th>Name</th>
-            <?php 
-                for ($lap = 0; $lap < $maxLaps; $lap++)
-                    printf("<th>Lap " . ($lap + 1) . "</th>");
+            <?php
+                if ($now > $start)
+                    for ($lap = 0; $lap < $maxLaps; $lap++)
+                        printf("<th>Lap " . ($lap + 1) . "</th>");
+                else
+                    printf("<th>Expected number of laps</th><th>Expected time [min]</th>");
             ?>
             </tr>
         </thead>
         <?php
-            foreach ($runners as $number => $runner) {
-                printf("</tr>");
-                $numLapsCreated = 0;
-                if ($res = $db->query("SELECT events.timestamp as timestamp, events.msecs as msecs, events.event as event, runners.name as name, numbers.number as number FROM events JOIN runners ON runners.id = events.runnerid JOIN numbers ON numbers.raceid = events.raceid AND numbers.runnerid = events.runnerid WHERE events.raceid=" . $raceid . " AND events.runnerid=" . $runner['id'] . " ORDER BY timestamp ASC, event ASC")) {
-                    if ($row = $res->fetch_assoc()) {
-                        printf("<td>" . $number . "</td><td>" . $runner['name'] . "</td>");
-                        $timestamps = [DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"])];
-                        while ($row = $res->fetch_assoc())
-                            array_push($timestamps, DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"]));
-                    
-                        $splits = [];
-                        for ($idx = 0; $idx < count($timestamps) - 1; $idx++)
-                            array_push($splits, $timestamps[$idx + 1]->getTimestamp() - $timestamps[$idx]->getTimestamp());
-                    
-                        foreach ($splits as $split)
-                            printf("<td>" . sprintf('%02d:%02d:%02d', ($split / 3600),($split / 60 % 60), $split % 60) . "</td>");
+            if ($now > $start) {
+                foreach ($runners as $number => $runner) {
+                    printf("<tr>");
+                    $numLapsCreated = 0;
+                    if ($res = $db->query("SELECT events.timestamp as timestamp, events.msecs as msecs, events.event as event, runners.name as name, numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time FROM events JOIN runners ON runners.id = events.runnerid JOIN numbers ON numbers.raceid = events.raceid AND numbers.runnerid = events.runnerid WHERE events.raceid=" . $raceid . " AND events.runnerid=" . $runner['id'] . " ORDER BY timestamp ASC, event ASC")) {
+                        if ($row = $res->fetch_assoc()) {
+                            printf("<td>" . $number . "</td><td>" . $runner['name'] . "</td>");
+                            $timestamps = [DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"])];
+                            while ($row = $res->fetch_assoc())
+                                array_push($timestamps, DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"]));
                         
-                         $numLapsCreated += count($splits);
-                    } else {
-                        printf("<td>" . $number . "</td><td>" . $runner['name'] . "</td>");
-                    }
+                            $splits = [];
+                            for ($idx = 0; $idx < count($timestamps) - 1; $idx++)
+                                array_push($splits, $timestamps[$idx + 1]->getTimestamp() - $timestamps[$idx]->getTimestamp());
+                        
+                            foreach ($splits as $split)
+                                printf("<td>" . sprintf('%02d:%02d:%02d', ($split / 3600),($split / 60 % 60), $split % 60) . "</td>");
 
-                    for ($idx = $numLapsCreated; $idx <= $maxLaps; $idx++)
-                        printf('<td></td>');
-                    $res->close();
+                             $numLapsCreated += count($splits);
+                        } else {
+                            printf("<td>" . $number . "</td><td>" . $runner['name'] . "</td>");
+                        }
+
+                        for ($idx = $numLapsCreated; $idx <= $maxLaps; $idx++)
+                            printf('<td></td>');
+                        $res->close();
+                    }
+                    printf("</tr>");
                 }
-                printf("</tr>");
+            } else {
+                foreach ($runners as $number => $runner) {
+                    printf("<tr>");
+                    if ($res = $db->query("SELECT numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time FROM numbers WHERE numbers.raceid = {$raceid} AND numbers.runnerid={$runner['id']}")) {
+                        if ($row = $res->fetch_assoc()) {
+                            printf("<td>{$number}</td>");
+                            printf("<td>{$runner['name']}</td>");
+                            printf("<td>{$row['laps']}</td>");
+                            printf("<td>{$row['time']}</td>");
+                        }
+                    }
+                    printf("</tr>");
+                }
             }
-        ?>
+?>
     </table>
     <p>Updated at <?=$now->format("Y-m-d H:i:s") ?></p>
     </div>
@@ -142,27 +160,6 @@
                 <div class="cell"><div id="map" style="width:100%; height:400px"></div></div>
             </div>
         </div>
-    </div>
-
-    <div class='cell'>
-        <form action="listtimes.php" method="get">
-        <h2>Select other race</h2>
-        <div class="input-group">
-            <span class="input-group-label">Select other race</span>
-            <select class="input-group-field" type="text" name="raceid">
-            <?php
-              if ($res = $db->query("SELECT id, name from races")) {
-                  while ($row = $res->fetch_assoc())
-                      printf('<option value="' . $row['id'] . '">' . $row['name'] . "</option>");
-                  $res->close();
-              }
-              ?>
-              </select>
-            <div class="input-group-button">
-                <input type=submit class="button" value="Show race">
-            </div>
-        </div>
-        </form>
     </div>
 </div>
 
