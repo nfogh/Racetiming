@@ -52,11 +52,12 @@
 <?php
     // Get runner indexes for this run
     $runners = array();
-    if ($res = $db->query('SELECT runners.id as id, numbers.number as number, runners.name as name FROM numbers JOIN runners ON (runners.id = numbers.runnerid) WHERE numbers.raceid = ' . $raceid . ' ORDER BY number ASC')) {
+    if ($res = $db->query('SELECT runners.id as id, numbers.number as number, runners.name as name, runners.surname as surname FROM numbers JOIN runners ON (runners.id = numbers.runnerid) WHERE numbers.raceid = ' . $raceid . ' ORDER BY number ASC')) {
         while ($row = $res->fetch_assoc())
             $runners[$row["number"]] = array(
                 'name' => $row['name'],
                 'id' => $row['id'],
+		'surname' => $row['surname']
             );
         $res->close();
     } else {
@@ -101,9 +102,9 @@
                 foreach ($runners as $number => $runner) {
                     printf("<tr>");
                     $numLapsCreated = 0;
-                    if ($res = $db->query("SELECT events.timestamp as timestamp, events.msecs as msecs, events.event as event, runners.name as name, numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time FROM events JOIN runners ON runners.id = events.runnerid JOIN numbers ON numbers.raceid = events.raceid AND numbers.runnerid = events.runnerid WHERE events.raceid=" . $raceid . " AND events.runnerid=" . $runner['id'] . " ORDER BY timestamp ASC, event ASC")) {
+                    if ($res = $db->query("SELECT events.timestamp as timestamp, events.msecs as msecs, events.event as event, runners.name as name, runners.surname as surname, numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time FROM events JOIN runners ON runners.id = events.runnerid JOIN numbers ON numbers.raceid = events.raceid AND numbers.runnerid = events.runnerid WHERE events.raceid=" . $raceid . " AND events.runnerid=" . $runner['id'] . " ORDER BY timestamp ASC, event ASC")) {
                         if ($row = $res->fetch_assoc()) {
-                            printf("<td>" . $number . "</td><td>" . $runner['name'] . "</td>");
+                            printf("<td>" . $number . "</td><td>" . $row['name'] . " " . $row['surname'] . "</td>");
                             $timestamps = [DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"])];
                             while ($row = $res->fetch_assoc())
                                 array_push($timestamps, DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"]));
@@ -117,7 +118,7 @@
 
                              $numLapsCreated += count($splits);
                         } else {
-                            printf("<td>" . $number . "</td><td>" . $runner['name'] . "</td>");
+                            printf("<td>" . $number . "</td><td>" . $row['name'] . " " . $row["surname"] . "</td>");
                         }
 
                         for ($idx = $numLapsCreated; $idx <= $maxLaps; $idx++)
@@ -132,7 +133,7 @@
                     if ($res = $db->query("SELECT numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time FROM numbers WHERE numbers.raceid = {$raceid} AND numbers.runnerid={$runner['id']}")) {
                         if ($row = $res->fetch_assoc()) {
                             printf("<td>{$number}</td>");
-                            printf("<td>{$runner['name']}</td>");
+                            printf("<td>{$runner['name']} {$runner['surname']}</td>");
                             printf("<td>{$row['laps']}</td>");
                             printf("<td>{$row['time']}</td>");
                         }
