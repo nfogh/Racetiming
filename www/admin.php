@@ -28,4 +28,9 @@ require '_header.php';
 <?php require "listnumbers.php" ?>
 <?php require "insertnumber.php" ?>
 
+<hr>
+<h1>Manage events</h1>
+<?php require "listevents.php" ?>
+<?php require "insertevent.php" ?>
+
 <?php require '_footer.php' ?>

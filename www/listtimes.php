@@ -52,11 +52,13 @@
 <?php
     // Get runner indexes for this run
     $runners = array();
-    if ($res = $db->query('SELECT runners.id as id, numbers.number as number, runners.name as name, runners.surname as surname FROM numbers JOIN runners ON (runners.id = numbers.runnerid) WHERE numbers.raceid = ' . $raceid . ' ORDER BY number ASC')) {
+    if ($res = $db->query('SELECT runners.id as id, numbers.number as number, runners.name as name, runners.surname as surname, numbers.expected_time as time, numbers.expected_laps as laps FROM numbers JOIN runners ON (runners.id = numbers.runnerid) WHERE numbers.raceid = ' . $raceid . ' ORDER BY number ASC')) {
         while ($row = $res->fetch_assoc())
             $runners[$row["number"]] = array(
                 'name' => $row['name'],
                 'id' => $row['id'],
+                'time' => $row['time'],
+                'laps' => $row['laps'],
 		'surname' => $row['surname']
             );
         $res->close();
@@ -83,17 +85,22 @@
                 printf('<div class="callout success"><h5>This race is ongoing</h5></div>');
             else if ($now < $start)
                 printf('<div class="callout warning"><h5>This race will start ' . $start->format("Y-m-d H:i:s") . ' </h5></div>');
+            else
+                printf('<div class="callout primary"><h5>This race finished ' . $finish->format("Y-m-d H:i:s") . ' </h5></div>');
+                
         ?>
 
         <table class="hover" width="80%">
         <thead>
-            <tr><th width=100>Number</th><th>Name</th>
+            <tr><th>&#35;</th><th>Name</th>
             <?php
-                if ($now > $start)
-                    for ($lap = 0; $lap < $maxLaps; $lap++)
-                        printf("<th>Lap " . ($lap + 1) . "</th>");
-                else
-                    printf("<th>Expected number of laps</th><th>Expected time [min]</th>");
+                 if ($now > $start) {
+                     printf("<th>Total</th>");
+                     for ($lap = 0; $lap < $maxLaps; $lap++)
+                         printf("<th>Lap " . ($lap + 1) . "</th>");
+                 } else {
+                    printf("<th>Expected laps</th><th>Expected time [min]</th>");
+                 }
             ?>
             </tr>
         </thead>
@@ -108,24 +115,36 @@
                             $timestamps = [DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"])];
                             while ($row = $res->fetch_assoc())
                                 array_push($timestamps, DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"]));
-                        
                             $splits = [];
                             for ($idx = 0; $idx < count($timestamps) - 1; $idx++)
                                 array_push($splits, $timestamps[$idx + 1]->getTimestamp() - $timestamps[$idx]->getTimestamp());
-                        
-                            foreach ($splits as $split)
-                                printf("<td>" . sprintf('%02d:%02d:%02d', ($split / 3600),($split / 60 % 60), $split % 60) . "</td>");
 
+                            $total = end($timestamps)->getTimestamp() - $timestamps[0]->getTimestamp();
+
+                            $kmh = number_format(count($splits)*1.75/$total*3600, 1);
+                            $minkm = number_format(($total / 60) / (count($splits)*1.75), 1);
+                            
+                            printf("<td><b><span data-tooltip title='{$kmh} km/h ({$minkm} min/km)'>" . sprintf('%02d:%02d:%02d', ($total / 3600),($total / 60 % 60), $total % 60) . "</span></b></td>");
+                            
+                            foreach ($splits as $split) {
+                                $kmh = number_format(1.75/$split*3600, 1);
+                                $minkm = number_format(($split / 60) / 1.75, 1);
+                                printf("<td><span data-tooltip title='{$kmh} km/h ({$minkm} min/km)' style='font-weight:regular'>" . sprintf('%02d:%02d:%02d', ($split / 3600),($split / 60 % 60), $split % 60) . "</span></td>");
+                            }
+                            
                              $numLapsCreated += count($splits);
                         } else {
-                            printf("<td>" . $number . "</td><td>" . $row['name'] . " " . $row["surname"] . "</td>");
+                            printf("<td>{$number}</td><td>{$runner['name']} {$runner['surname']}</td><td><div style='color:gray'>00:{$runner['time']}:00</div></td>");
+                            for ($idx = 0; $idx < $runner['laps']; $idx++)
+                                printf("<td class='text-center'><div style='color:gray'>-</div></td>");
+                            $numLapsCreated += $runner['laps'];
                         }
 
                         for ($idx = $numLapsCreated; $idx <= $maxLaps; $idx++)
                             printf('<td></td>');
                         $res->close();
                     }
-                    printf("</tr>");
+                    printf("</tr>\n");
                 }
             } else {
                 foreach ($runners as $number => $runner) {
@@ -143,9 +162,51 @@
             }
 ?>
     </table>
-    <p>Updated at <?=$now->format("Y-m-d H:i:s") ?></p>
+    <div class="text-right">Updated at <?=$now->format("Y-m-d H:i:s") ?></div>
+
+<?php
+                    if (is_dir("./assets/races/{$raceid}")) {
+$images = array_filter(scandir("./assets/races/{$raceid}"), function($item) {
+    return !is_dir("./assets/races/{$raceid}/" . $item) && pathinfo($item, PATHINFO_EXTENSION) == "JPG";
+});
+                        }
+if ($images) {
+?>
+<div class="grid-x">
+    <div class="cell small-1 large-3"></div>
+    <div class="cell small-10 large-6">
+    <h4>Images from event</h4>
+<div class="orbit" role="region" aria-label="Pictures from BKL" data-orbit width=50%>
+  <div class="orbit-wrapper">
+    <div class="orbit-controls">
+      <button class="orbit-previous"><span class="show-for-sr">Previous Slide</span>&#9664;&#xFE0E;</button>
+      <button class="orbit-next"><span class="show-for-sr">Next Slide</span>&#9654;&#xFE0E;</button>
     </div>
-    
+    <ul class="orbit-container">
+<?php
+    $isactive = "is-active";
+    foreach ($images as $image) {
+        printf("<li class='{$isactive} orbit-slide'>");
+        printf("<figure class='orbit-figure'>");
+        printf("  <img class='orbit-image' src='/assets/races/{$raceid}/{$image}'>");
+        printf("  <figcaption class='orbit-caption'>");
+        if (file_exists("./assets/races/{$raceid}/{$image}.txt"))
+            readfile("./assets/races/{$raceid}/{$image}.txt");
+        printf("</figcaption>");
+        printf("</figure>");
+        printf("</li>");
+        $isactive = "";
+    }
+?>
+    </ul>
+  </div>
+</div>
+    </div>
+    <div class="cell small-1 large-3"></div>
+    </div>
+<?php } ?>
+    </div>
+
     <div class="small-4">
         <div class="panel callout radius">
             <?= $description ?>
