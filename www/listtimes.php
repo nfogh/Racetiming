@@ -7,7 +7,35 @@
         $masthead_text = 'Select race';
 
         require '_header.php';
-        printf('<div class="callout large">Please select a race from the dropdown');
+?>
+<div class="grid-container">
+    <div class="grid-x grid-padding-x">
+        <div class="cell">
+        <h1>Races</h1>
+        </div>
+        <div class='cell'>
+            <?php
+                if ($res = $db->query("SELECT id, name, description, start, finish FROM races ORDER BY finish DESC")) {
+                    while ($row = $res->fetch_assoc())
+                    {
+                        $id = $row['id'];
+                        $start = $row['start'];
+                        $name = $row['name'];
+                        $description = $row['description'];
+                        printf("<div class='callout primary large'>");
+                        printf("<p>{$start}</p>");
+                        printf("<h2><a href='/listtimes.php?raceid={$id}'>{$name}</a></h2>");
+                        printf("<p>{$description}</p>");
+printf("</div>");
+                    }
+                
+                    $res->close();
+                }
+            ?>
+        </div>
+    </div>
+</div>
+<?php
         require '_footer.php';
         exit();
     }

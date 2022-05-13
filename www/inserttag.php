@@ -4,13 +4,13 @@
         <div class="medium-6 cell">
             <form action="addtag.php" method=post>
                 <table>
-                    <tr><td>Runner</td><td>RFID TID</td></tr>
+                    <tr><td>Number</td><td>RFID TID</td></tr>
                     <tr><td>
-                        <select name="runnerid">
+                        <select name="numberid">
                         <?php
-                            if ($res = $db->query("SELECT * FROM runners")) {
-                                while ($row = $res->fetch_row())
-                                    printf("<option value=\"%s\">%s</option>", $row[0], $row[1]);
+                            if ($res = $db->query("SELECT numbers.id as id, numbers.number as number, races.name as racename, runners.name as runnername, runners.surname as runnersurname FROM numbers JOIN races ON (numbers.raceid = races.id) JOIN runners ON (runners.id = numbers.runnerid)")) {
+                                while ($row = $res->fetch_assoc())
+                                    printf("<option value='{$row['id']}'>{$row['racename']} [{$row['number']}] {$row['runnername']} {$row['runnersurname']}</option>");
                                 $res->close();
                             }
                         ?>

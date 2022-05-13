@@ -1,6 +1,6 @@
 <?php
 require '_init.php';
-require '_admin.php';
+require '_adminpage.php';
 
 $title = 'Add RFID Tag';
 $masthead_image = 'assets/images/masthead.jpg';
@@ -10,22 +10,20 @@ require '_header.php';
 ?>
 
 <?php
-$tid = htmlspecialchars($_POST["tid"]);
-$tid = mysqli_real_escape_string($db, $tid);
+$tid = mysqli_real_escape_string($db, htmlspecialchars($_POST["tid"]));
 
-$runnerid = htmlspecialchars($_POST["runnerid"]);
-$runnerid = mysqli_real_escape_string($db, $runnerid);
+$numberid = mysqli_real_escape_string($db, htmlspecialchars($_POST["numberid"]));
 
-$sql = "INSERT INTO rfidtags (tid, runnerid) VALUES (0x" . $tid . "," . $runnerid . ")";
-printf($sql);
+$sql = "INSERT INTO rfidtags (tid, numberid) VALUES (0x" . $tid . "," . $numberid . ")";
 if (!$db->query($sql)) {
-    printf("<h2>Unable to insert new tag. " . $db->error . "</h2>");
+    printf("<h2>Unable to insert new tag. " . $db->error . "</h2> {$sql}.");
 }
 else {
-    printf("<h1>Inserted tag %s</h1>", $runnername);
+    printf("<h1>Inserted tag %s</h1>", $tid);
 }
-require "listtags.php"
 ?>
+
+<?php require "listtags.php" ?>
 
 <?php require "inserttag.php" ?>
 

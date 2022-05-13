@@ -4,14 +4,15 @@
         <div class="grid-x grid-padding-x">
             <div class="medium-6 cell">
                 <table>
-                    <tr><td>Runner ID</td><td>Name</td><td>TID</td><td>Select</td></tr>
+                    <tr><td>Race</td><td>Number</td><td>Name</td><td>TID</td><td>Select</td></tr>
                     <?php
-                        if ($res = $db->query("SELECT rfidtags.runnerid, rfidtags.tid, runners.name FROM rfidtags JOIN runners ON runners.id = rfidtags.runnerid")) {
+                        if ($res = $db->query("SELECT rfidtags.numberid as numberid, rfidtags.tid as tid, rfidtags.id as id, numbers.number as number, numbers.raceid as raceid, numbers.runnerid as runnerid, runners.name as runnername, runners.surname as runnersurname, races.name as racename FROM rfidtags JOIN numbers ON (numbers.id = rfidtags.numberid) JOIN runners ON (runners.id = numbers.runnerid) JOIN races ON (races.id = numbers.raceid)")) {
                         
-                            while ($row = $res->fetch_row()) {
+                            while ($row = $res->fetch_assoc()) {
+                                $tid = strtoupper(bin2hex($row['tid']));
                                 printf("<tr>");
-                                printf("<td>%s</td><td>%s</td><td>0x%s</td>\n", $row[0], $row[2], strtoupper(bin2hex($row[1])));
-                                printf("<td><input type=checkbox name=check[%s]></td>", bin2hex($row[1]));
+                                printf("<td>{$row['racename']}</td><td>{$row['number']}</td><td>{$row['runnername']} {$row['runnersurname']}</td><td>0x{$tid}</td>\n");
+                                printf("<td><input type=checkbox name=check[{$row['id']}]></td>");
                                 printf("</tr>");
                             }
                         

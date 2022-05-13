@@ -19,23 +19,15 @@ if ($res = $db->query('SELECT permissions.raceid as raceid from permissions JOIN
     printf("Error " . $db->error);
 }
 
-$sql = 'SELECT numbers.number as runnernumber, runners.name as runnername, runners.id as runnerid, runners.surname as runnersurname FROM numbers JOIN races ON (races.id = numbers.raceid) JOIN runners ON (runners.id = numbers.runnerid) WHERE races.id=' . $raceid;
+$sql = 'SELECT numbers.number as number, runners.name as name, runners.id as id, runners.surname as surname FROM numbers JOIN races ON (races.id = numbers.raceid) JOIN runners ON (runners.id = numbers.runnerid) WHERE races.id=' . $raceid;
 
 $data = array();
 if ($res = $db->query($sql)) {
-    //printf('{"runners": [');
     while ($row = $res->fetch_assoc()) {
         $data[] = $row;
-        //printf("{\n" .
-        //    '"runnernumber":' . $row['runnernumber'] . ",\n" .
-        //    '"runnername":"'   . $row['runnername'] . "\",\n" .
-        //    '"runnersurname":"'   . $row['runnersurname'] . "\",\n" .
-        //    '"runnerid":'     . $row['runnerid'] . "\n" .
-        //"},\n");
     }
     $res->close();
-    echo json_encode($data);
-    //printf(']}');
+    echo "{ \"runners\": " . json_encode($data) . " }";
 } else {
     printf("Error " . $db->error . ". SQL: " . $sql);
 }
