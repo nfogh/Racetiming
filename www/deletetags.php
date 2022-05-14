@@ -18,7 +18,7 @@ $sql = "DELETE FROM rfidtags WHERE id IN (" . implode(", ", $ids) . ")";
 if (!$db->query($sql)) {
     printf("<h2>Unable to delete tags. " . $db->error . "</h2>");
 } else {
-    printf("<h1>Deletee tags %s</h1>", implode(", ", $ids));
+    printf("<h1>Deleted tags %s</h1>", implode(", ", $ids));
 }
 ?>
 

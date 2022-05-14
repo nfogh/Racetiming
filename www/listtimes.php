@@ -53,7 +53,7 @@ printf("</div>");
             $latitude = $row["latitude"];
             $longitude = $row["longitude"];
         } else {
-            die("Unable to find race with the id " . $raceid);
+            die("Unable to find race with the id {$raceid}");
         }
         $res->close();
     } else {
@@ -70,7 +70,7 @@ printf("</div>");
 
 <?php
     // Get the highest number of laps to format the table
-    if ($res = $db->query("SELECT runnerid, COUNT(*) as laps FROM events WHERE raceid=1 GROUP BY runnerid ORDER BY laps DESC LIMIT 1")) {
+    if ($res = $db->query("SELECT runnerid, COUNT(*) as laps FROM events JOIN numbers ON (events.numberid = numbers.id) WHERE numbers.raceid={$raceid} GROUP BY runnerid ORDER BY laps DESC LIMIT 1")) {
         if ($row = $res->fetch_assoc())
             $maxlaps = $row["laps"] - 1;
         $res->close();
@@ -97,7 +97,7 @@ printf("</div>");
 
 <?php
     // Get the highest number of laps to format the table
-    if ($res = $db->query('SELECT runnerid, COUNT(*) as laps FROM events WHERE raceid=' . $raceid . ' GROUP BY runnerid ORDER BY laps DESC LIMIT 1')) {
+    if ($res = $db->query('SELECT numbers.runnerid, COUNT(*) as laps FROM events JOIN numbers ON (numbers.id = events.numberid) WHERE raceid=' . $raceid . ' GROUP BY runnerid ORDER BY laps DESC LIMIT 1')) {
         if ($row = $res->fetch_assoc())
             $maxLaps = $row["laps"] - 1;
         else
@@ -137,7 +137,7 @@ printf("</div>");
                 foreach ($runners as $number => $runner) {
                     printf("<tr>");
                     $numLapsCreated = 0;
-                    if ($res = $db->query("SELECT events.timestamp as timestamp, events.msecs as msecs, events.event as event, runners.name as name, runners.surname as surname, numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time FROM events JOIN runners ON runners.id = events.runnerid JOIN numbers ON numbers.raceid = events.raceid AND numbers.runnerid = events.runnerid WHERE events.raceid=" . $raceid . " AND events.runnerid=" . $runner['id'] . " ORDER BY timestamp ASC, event ASC")) {
+                    if ($res = $db->query("SELECT events.timestamp as timestamp, events.msecs as msecs, events.event as event, runners.name as name, runners.surname as surname, numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time FROM events JOIN numbers ON events.numberid = numbers.id JOIN runners ON runners.id = numbers.runnerid WHERE numbers.raceid=" . $raceid . " AND numbers.runnerid=" . $runner['id'] . " ORDER BY timestamp ASC, event ASC")) {
                         if ($row = $res->fetch_assoc()) {
                             printf("<td>" . $number . "</td><td>" . $row['name'] . " " . $row['surname'] . "</td>");
                             $timestamps = [DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"])];

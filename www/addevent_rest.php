@@ -1,41 +1,51 @@
 <?php
-if (!isset($_GET['apikey']))
-    exit("Missing apikey parameter");
-$apikey = htmlspecialchars($_GET["apikey"]);
+require "_init.php";
 
-if (!isset($_GET['raceid']))
-    exit("Missing raceid parameter");
-$raceid = mysqli_real_escape_string($db, htmlspecialchars($_GET["raceid"]));
+if (!isset($_POST['apikey']))
+    exit("{ \"addevent\": \"error: Missing apikey parameter\" }");
 
-if ($res = $db->query('SELECT permissions.raceid as raceid from permissions JOIN rest_api_keys ON (rest_api_keys.adminid = permissions.adminid) WHERE rest_api_keys.api_key = "' . $apikey . '" AND raceid=' . $raceid)) {
+$apikey = htmlspecialchars($_POST["apikey"]);
+
+if (!isset($_POST['numberid']))
+    exit("{ \"addevent\": \"error: Missing numberid parameter\" }");
+         
+$numberid = mysqli_real_escape_string($db, htmlspecialchars($_POST["numberid"]));
+
+$sql = "
+    SELECT 
+        numbers.id
+    FROM numbers
+    JOIN permissions ON (numbers.raceid = permissions.raceid)
+    JOIN rest_api_keys ON (rest_api_keys.adminid = permissions.adminid) 
+    WHERE rest_api_keys.api_key = '{$apikey}' AND numbers.id='{$numberid}'";
+if ($res = $db->query($sql)) {
     if (!($row = $res->fetch_assoc())) {
         printf('PERMISSION DENIED');
         exit();
     }
     $res->close();
 } else {
-    printf("Error " . $db->error);
+    exit("{ \"addevent\": \"error {$db->error}\" }");
 }
 
-if (!isset($_GET['runnerid']))
-    exit("Missing runnerid parameter");
-$runnerid = mysqli_real_escape_string($db, htmlspecialchars($_GET["runnerid"]));
+if (!isset($_POST['timestamp']))
+    exit("{ \"addevent\": \"error: Missing timestamp parameter\" }");
+$timestamp = mysqli_real_escape_string($db, htmlspecialchars($_POST["timestamp"]));
 
-if (!isset($_GET['timestamp']))
-    exit("Missing timestamp parameter");
-$timestamp = mysqli_real_escape_string($db, htmlspecialchars($_GET["timestamp"]));
+if (!isset($_POST['msecs']))
+    exit("{ \"addevent\": \"error: Missing msecs parameter\" }");
 
-if (!isset($_GET['msecs']))
-    exit("Missing msecs parameter");
-$msecs = mysqli_real_escape_string($db, htmlspecialchars($_GET["msecs"]));
+$msecs = mysqli_real_escape_string($db, htmlspecialchars($_POST["msecs"]));
 
-if (!isset($_GET['event']))
-    exit("Missing event parameter");
-$event = mysqli_real_escape_string($db, htmlspecialchars($_GET["event"]));
+if (!isset($_POST['event']))
+    exit("{ \"addevent\": \"error: Missing event parameter\" }");
 
-$sql = 'INSERT INTO events (raceid, runnerid, timestamp, msecs, event) VALUES ("' . $raceid . '", "' . $runnerid . '", "' . $timestamp . '", "' . $msecs . '", "' . $event . '")';
+$event = mysqli_real_escape_string($db, htmlspecialchars($_POST["event"]));
+
+$sql = 'INSERT INTO events (numberid, timestamp, msecs, event) VALUES ("' . $numberid . '", "' . $timestamp . '", "' . $msecs . '", "' . $event . '")';
 if ($db->query($sql)) {
+    exit("{ \"addevent\": \"success\" }");
 } else {
-    printf("Error " . $db->error . ". SQL: " . $sql);
+    exit("{ \"addevent\": \"error: {$db->error}\" }");
 }
 ?>

@@ -19,7 +19,7 @@ if ($res = $db->query('SELECT permissions.raceid as raceid from permissions JOIN
     printf("Error " . $db->error);
 }
 
-$sql = 'SELECT numbers.number as number, runners.name as name, runners.id as id, runners.surname as surname FROM numbers JOIN races ON (races.id = numbers.raceid) JOIN runners ON (runners.id = numbers.runnerid) WHERE races.id=' . $raceid;
+$sql = 'SELECT numbers.id as numberid, numbers.number as number, runners.name as name, runners.surname as surname, runners.id as runnerid, rfidtags.tid as tid FROM numbers JOIN races ON (races.id = numbers.raceid) JOIN runners ON (runners.id = numbers.runnerid) LEFT JOIN rfidtags ON (rfidtags.numberid = numbers.id) WHERE races.id=' . $raceid;
 
 $data = array();
 if ($res = $db->query($sql)) {
