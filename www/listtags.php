@@ -9,9 +9,8 @@
                         if ($res = $db->query("SELECT rfidtags.numberid as numberid, rfidtags.tid as tid, rfidtags.id as id, numbers.number as number, numbers.raceid as raceid, numbers.runnerid as runnerid, runners.name as runnername, runners.surname as runnersurname, races.name as racename FROM rfidtags JOIN numbers ON (numbers.id = rfidtags.numberid) JOIN runners ON (runners.id = numbers.runnerid) JOIN races ON (races.id = numbers.raceid)")) {
                         
                             while ($row = $res->fetch_assoc()) {
-                                $tid = strtoupper(bin2hex($row['tid']));
                                 printf("<tr>");
-                                printf("<td>{$row['racename']}</td><td>{$row['number']}</td><td>{$row['runnername']} {$row['runnersurname']}</td><td>0x{$tid}</td>\n");
+                                printf("<td>{$row['racename']}</td><td>{$row['number']}</td><td>{$row['runnername']} {$row['runnersurname']}</td><td>{$row['tid']}</td>\n");
                                 printf("<td><input type=checkbox name=check[{$row['id']}]></td>");
                                 printf("</tr>");
                             }

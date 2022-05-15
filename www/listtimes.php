@@ -63,6 +63,7 @@ printf("</div>");
     $title = 'Runner times for ' . $name;
     $masthead_image = 'assets/races/smormosen.jpg';
     $masthead_text = $name;
+    $extraheaders = "<meta http-equiv=\"refresh\" content=\"5\">";
 
     require '_header.php';
     $now = new DateTime();
