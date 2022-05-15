@@ -14,11 +14,24 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="currentRaceLabel">
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Not connected to any race</string>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -83,15 +96,22 @@
            <string>Available races</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0">
-            <widget class="QComboBox" name="availableRacesComboBox"/>
-           </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="getRunnersPushButton">
              <property name="text">
               <string>Get runners</string>
              </property>
             </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QComboBox" name="availableRacesComboBox">
+             <property name="modelColumn">
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QTableView" name="tableView"/>
            </item>
           </layout>
          </widget>
@@ -118,7 +138,7 @@
          </widget>
         </item>
         <item row="2" column="3">
-         <widget class="QComboBox" name="comboBox_6"/>
+         <widget class="QSerialPortComboBox" name="comboBox_6"/>
         </item>
         <item row="1" column="2">
          <widget class="QComboBox" name="comboBox_2">
@@ -136,11 +156,9 @@
         </item>
         <item row="1" column="1">
          <widget class="QComboBox" name="comboBox">
-          <item>
-           <property name="text">
-            <string>Custom</string>
-           </property>
-          </item>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
           <item>
            <property name="text">
             <string>M6E Nano</string>
@@ -150,11 +168,9 @@
         </item>
         <item row="2" column="1">
          <widget class="QComboBox" name="comboBox_4">
-          <item>
-           <property name="text">
-            <string>Custom</string>
-           </property>
-          </item>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
           <item>
            <property name="text">
             <string>M6E Nano</string>
@@ -163,7 +179,7 @@
          </widget>
         </item>
         <item row="1" column="3">
-         <widget class="QComboBox" name="comboBox_3"/>
+         <widget class="QSerialPortComboBox" name="comboBox_3"/>
         </item>
         <item row="0" column="1">
          <widget class="QLabel" name="label_2">
@@ -181,6 +197,9 @@
         </item>
         <item row="2" column="2">
          <widget class="QComboBox" name="comboBox_5">
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
           <item>
            <property name="text">
             <string>Start/Lap</string>
@@ -226,20 +245,28 @@
            <string>Enter custom event</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="1" column="3">
-            <widget class="QSpinBox" name="msecsSpinBox"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QSpinBox" name="raceIDSpinBox"/>
-           </item>
-           <item row="0" column="1">
+           <item row="0" column="0">
             <widget class="QLabel" name="label_9">
              <property name="text">
-              <string>Runnerid</string>
+              <string>Runner</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="4">
+           <item row="1" column="3">
+            <widget class="QCheckBox" name="customEventNowCheckBox">
+             <property name="text">
+              <string>Now</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>Timestamp</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="4">
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -252,6 +279,40 @@
              </property>
             </spacer>
            </item>
+           <item row="1" column="0">
+            <widget class="QComboBox" name="customEventRunnerIDComboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="modelColumn">
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="4">
+            <widget class="QComboBox" name="customEventEventTypeComboBox">
+             <item>
+              <property name="text">
+               <string>Start/lap</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Finish</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QPushButton" name="customEventInsertPushButton">
+             <property name="text">
+              <string>Insert</string>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="4">
             <widget class="QLabel" name="label_12">
              <property name="text">
@@ -259,40 +320,31 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
+           <item row="1" column="2">
+            <widget class="QDateTimeEdit" name="customEventTimestampDateTimeEdit">
+             <property name="displayFormat">
+              <string>yyyy-MM-dd HH:mm:ss.zzz</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="5">
+            <widget class="QPushButton" name="customEventTriggerPushButton">
+             <property name="text">
+              <string>Trigger</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QComboBox" name="customEventTIDComboBox">
+             <property name="modelColumn">
+              <number>5</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
             <widget class="QLabel" name="label_8">
              <property name="text">
-              <string>Raceid</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_10">
-             <property name="text">
-              <string>Timestamp</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QDateTimeEdit" name="timestampDateTimeEdit"/>
-           </item>
-           <item row="0" column="3">
-            <widget class="QLabel" name="label_11">
-             <property name="text">
-              <string>msecs</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="4">
-            <widget class="QComboBox" name="eventTypeComboBox"/>
-           </item>
-           <item row="1" column="1">
-            <widget class="QSpinBox" name="runnerIDSpinBox"/>
-           </item>
-           <item row="1" column="5">
-            <widget class="QPushButton" name="insertEventPushButton">
-             <property name="text">
-              <string>Insert</string>
+              <string>TID</string>
              </property>
             </widget>
            </item>
@@ -317,6 +369,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QSerialPortComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">qserialportcombobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

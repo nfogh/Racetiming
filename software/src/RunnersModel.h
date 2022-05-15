@@ -2,25 +2,24 @@
 #define RUNNERSMODEL_H
 
 #include <QAbstractTableModel>
+#include <QVector>
+#include "racetimingtypes.h"
 
 class RunnersModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
+    enum {
+        numberIDRole = Qt::UserRole
+    };
+
     RunnersModel(QObject *parent = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override { return m_data.size(); };
     int columnCount(const QModelIndex &parent = QModelIndex()) const override { return 2; };
     QVariant headerData(int section, Qt::Orientation, int) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    struct Runner {
-        int id;
-        int number;
-        QString name;
-        QString surname;
-    };
-
-    void setData(const std::vector<Runner>& data)
+    void setData(const QVector<RaceTiming::Runner>& data)
     {
         emit layoutAboutToBeChanged();
         m_data = data;
@@ -33,10 +32,10 @@ public:
         }
     };
 
-    const std::vector<Runner>& getData() { return m_data; };
+    const QVector<RaceTiming::Runner>& getData() { return m_data; };
 
 private:
-    std::vector<Runner> m_data;
+    QVector<RaceTiming::Runner> m_data;
 };
 
 #endif // RUNNERSMODEL_H
