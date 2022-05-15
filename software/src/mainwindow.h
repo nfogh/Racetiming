@@ -2,10 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkReply>
-
-#include <RunnersModel.h>
+#include "racetiminginterface.h"
+#include "m6erfidreader.h"
+#include <QSerialPort>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -20,17 +19,33 @@ public:
     ~MainWindow();
 
 private slots:
-    void replyFinished(QNetworkReply* reply);
+    void on_raceTimingInterface_gotRaces();
+    void on_raceTimingInterface_gotRunners();
 
     void on_raceConnectionsConnectButton_clicked();
 
     void on_getRunnersPushButton_clicked();
 
+    void on_customEventInsertPushButton_clicked();
+
+    void on_customEventTriggerPushButton_clicked();
+
+    void on_connectRFID1ConnectPushButton_clicked();
+
+    void on_connectRFID2ConnectPushButton_clicked();
+
+    void on_RFID1Reader_rfidDetected(const QString& tid);
+    void on_RFID2Reader_rfidDetected(const QString& tid);
+
 private:
+    void rfidDetected(int readerIndex, const QString& tid);
+
     Ui::MainWindow *ui;
 
-    QNetworkAccessManager *m_networkAccessManager;
+    QVector<std::shared_ptr<M6ERFIDReader>> m_rfidReaders;
+    QVector<std::shared_ptr<QSerialPort>> m_rfidDevices;
 
-    RunnersModel m_runnersModel;
+    RaceTiming::RaceTimingInterface m_raceTimingInterface;
+
 };
 #endif // MAINWINDOW_H

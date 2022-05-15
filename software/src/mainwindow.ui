@@ -14,11 +14,24 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="currentRaceLabel">
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Not connected to any race</string>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -83,15 +96,22 @@
            <string>Available races</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0">
-            <widget class="QComboBox" name="availableRacesComboBox"/>
-           </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="getRunnersPushButton">
              <property name="text">
               <string>Get runners</string>
              </property>
             </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QComboBox" name="availableRacesComboBox">
+             <property name="modelColumn">
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QTableView" name="tableView"/>
            </item>
           </layout>
          </widget>
@@ -103,11 +123,27 @@
         <string>RFID reader connections</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>2</string>
+        <item row="2" column="2">
+         <widget class="QComboBox" name="connectRFID2FunctionComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>Start/Lap</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Finish</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item row="1" column="0">
@@ -117,59 +153,22 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="3">
-         <widget class="QComboBox" name="comboBox_6"/>
-        </item>
-        <item row="1" column="2">
-         <widget class="QComboBox" name="comboBox_2">
-          <item>
-           <property name="text">
-            <string>Start/Lap</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Finish</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QComboBox" name="comboBox">
-          <item>
-           <property name="text">
-            <string>Custom</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>M6E Nano</string>
-           </property>
-          </item>
-         </widget>
-        </item>
         <item row="2" column="1">
-         <widget class="QComboBox" name="comboBox_4">
-          <item>
-           <property name="text">
-            <string>Custom</string>
-           </property>
-          </item>
+         <widget class="QComboBox" name="connectRFID2TypeComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
           <item>
            <property name="text">
             <string>M6E Nano</string>
            </property>
           </item>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QComboBox" name="comboBox_3"/>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Type</string>
-          </property>
          </widget>
         </item>
         <item row="0" column="3">
@@ -179,8 +178,31 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
-         <widget class="QComboBox" name="comboBox_5">
+        <item row="0" column="2">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Function</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QSerialPortComboBox" name="connectRFID2ConnectionComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QComboBox" name="connectRFID1FunctionComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <item>
            <property name="text">
             <string>Start/Lap</string>
@@ -193,11 +215,46 @@
           </item>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="label_5">
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_7">
           <property name="text">
-           <string>Function</string>
+           <string>2</string>
           </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Type</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QSerialPortComboBox" name="connectRFID1ConnectionComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="connectRFID1TypeComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>M6E Nano</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item row="3" column="2">
@@ -213,6 +270,20 @@
           </property>
          </spacer>
         </item>
+        <item row="1" column="4">
+         <widget class="QPushButton" name="connectRFID1ConnectPushButton">
+          <property name="text">
+           <string>Connect</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="4">
+         <widget class="QPushButton" name="connectRFID2ConnectPushButton">
+          <property name="text">
+           <string>Connect</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_4">
@@ -226,20 +297,42 @@
            <string>Enter custom event</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="1" column="3">
-            <widget class="QSpinBox" name="msecsSpinBox"/>
+           <item row="1" column="4">
+            <widget class="QComboBox" name="customEventEventTypeComboBox">
+             <item>
+              <property name="text">
+               <string>Start/lap</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Finish</string>
+              </property>
+             </item>
+            </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QSpinBox" name="raceIDSpinBox"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_9">
+           <item row="3" column="5">
+            <widget class="QPushButton" name="customEventTriggerPushButton">
              <property name="text">
-              <string>Runnerid</string>
+              <string>Trigger</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="4">
+           <item row="0" column="4">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Event Type</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QPushButton" name="customEventInsertPushButton">
+             <property name="text">
+              <string>Insert</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="4">
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -252,17 +345,51 @@
              </property>
             </spacer>
            </item>
-           <item row="0" column="4">
-            <widget class="QLabel" name="label_12">
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_8">
              <property name="text">
-              <string>Event Type</string>
+              <string>TID</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QCheckBox" name="customEventNowCheckBox">
+             <property name="text">
+              <string>Now</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QComboBox" name="customEventTIDComboBox">
+             <property name="modelColumn">
+              <number>5</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QComboBox" name="customEventRunnerIDComboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="modelColumn">
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QDateTimeEdit" name="customEventTimestampDateTimeEdit">
+             <property name="displayFormat">
+              <string>yyyy-MM-dd HH:mm:ss.zzz</string>
              </property>
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QLabel" name="label_8">
+            <widget class="QLabel" name="label_9">
              <property name="text">
-              <string>Raceid</string>
+              <string>Runner</string>
              </property>
             </widget>
            </item>
@@ -273,28 +400,8 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
-            <widget class="QDateTimeEdit" name="timestampDateTimeEdit"/>
-           </item>
-           <item row="0" column="3">
-            <widget class="QLabel" name="label_11">
-             <property name="text">
-              <string>msecs</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="4">
-            <widget class="QComboBox" name="eventTypeComboBox"/>
-           </item>
-           <item row="1" column="1">
-            <widget class="QSpinBox" name="runnerIDSpinBox"/>
-           </item>
-           <item row="1" column="5">
-            <widget class="QPushButton" name="insertEventPushButton">
-             <property name="text">
-              <string>Insert</string>
-             </property>
-            </widget>
+           <item row="4" column="0" colspan="6">
+            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
            </item>
           </layout>
          </widget>
@@ -317,6 +424,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QSerialPortComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">qserialportcombobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
