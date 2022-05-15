@@ -120,7 +120,7 @@ void loop()
 
     if (responseType == RESPONSE_IS_KEEPALIVE)
     {
-      Serial.println("KEEPALIVE");
+      //Serial.println("KEEPALIVE");
     }
     else if (responseType == RESPONSE_IS_TAGFOUND)
     {
@@ -133,32 +133,21 @@ void loop()
 
       const uint32_t id = bytesToUInt32(&nano.msg[31]);
 
-      Serial.print("TAG DETECTED ");
-      Serial.println(id, HEX);
-
       struct DetectedTag* tag = FindTag(detectedTags, ARRAYSIZE(detectedTags), id);
       if (tag != 0) {
           // The tag was detected within the cooldown time
-          const int msSinceDetection = millis() - tag->detectedTime;
+          const uint32_t msSinceDetection = millis() - tag->detectedTime;
 
           if (msSinceDetection < COOLDOWNTIME_MS) {
-              Serial.print("Tag already detected at: ");
-              Serial.print(tag->detectedTime);
-              Serial.print(" current time: ");
-              Serial.println(millis());
               // We already detected this tag within the cooldown time. Don't register it.
               return;
           } else {
               // Cooldowntime has elapsed, reregister the tag
-              Serial.print("Tag has left cooldown, reregistering at time: ");
-              Serial.println(millis());
               tag->detectedTime = millis();
           }
       } else {
         struct DetectedTag* tag = FindFreeSpace(detectedTags, ARRAYSIZE(detectedTags));
         if (tag != 0) {
-            Serial.print("Tag inserted in cooldown list at time: ");
-            Serial.println(millis());
             tag->id = id;
             tag->detectedTime = millis();
         } else {
@@ -170,10 +159,8 @@ void loop()
       Serial.print("TAGID,");
       Serial.println(id, HEX);
 
-      if (buzzerTone == 0) {
-        buzzerTone = 1;
-        buzzerTimeout = millis();
-      }
+      buzzerTone = 1;
+      buzzerTimeout = millis();
 
     }
     else if (responseType == ERROR_CORRUPT_RESPONSE)

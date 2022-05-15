@@ -32,11 +32,18 @@ private slots:
 
     void on_connectRFID1ConnectPushButton_clicked();
 
+    void on_connectRFID2ConnectPushButton_clicked();
+
+    void on_RFID1Reader_rfidDetected(const QString& tid);
+    void on_RFID2Reader_rfidDetected(const QString& tid);
+
 private:
+    void rfidDetected(int readerIndex, const QString& tid);
+
     Ui::MainWindow *ui;
 
-    QVector<M6ERFIDReader> m_rfidReaders;
-    QVector<QSerialPort> m_rfidDevices;
+    QVector<std::shared_ptr<M6ERFIDReader>> m_rfidReaders;
+    QVector<std::shared_ptr<QSerialPort>> m_rfidDevices;
 
     RaceTiming::RaceTimingInterface m_raceTimingInterface;
 
