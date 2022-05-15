@@ -4,25 +4,14 @@
         <div class="grid-x grid-padding-x">
           <div class="medium-12 cell">
             <table>
-                <tr><td>Race</td><td>Runner</td><td>Timestamp</td><td>Milliseconds</td><td>Event type</td></tr>
+                <tr><td>Number</td><td>Timestamp</td><td>Milliseconds</td><td>Event type</td></tr>
                 <tr>
                     <td>
-                        <select name="raceid">
+                        <select name="numberid">
                             <?php
-                                if ($res = $db->query("SELECT id, name FROM races")) {
+                                if ($res = $db->query("SELECT numbers.id as numberid, numbers.number as number, runners.name as runnername, runners.surname as runnersurname, races.name as racename FROM numbers JOIN runners ON (numbers.runnerid = runners.id) JOIN races ON (numbers.raceid = races.id)")) {
                                     while ($row = $res->fetch_assoc())
-                                        printf("<option value='{$row['id']}'>{$row['name']}</option>");
-                                    $res->close();
-                                }
-                            ?>
-                        </select>
-                    </td>
-                    <td>
-                        <select name="runnerid">
-                            <?php
-                                if ($res = $db->query("SELECT id, name, surname FROM runners")) {
-                                    while ($row = $res->fetch_assoc())
-                                        printf("<option value={$row['id']}>{$row['name']} {$row['surname']}</option>");
+                                        printf("<option value='{$row['numberid']}'>{$row['racename']} - {$row['number']} - {$row['runnername']} {$row['runnersurname']}</option>");
                                     $res->close();
                                 }
                             ?>
