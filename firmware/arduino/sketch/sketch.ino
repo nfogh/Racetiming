@@ -120,7 +120,7 @@ void loop()
 
     if (responseType == RESPONSE_IS_KEEPALIVE)
     {
-      //Serial.println("KEEPALIVE");
+      Serial.println("KEEPALIVE");
     }
     else if (responseType == RESPONSE_IS_TAGFOUND)
     {
