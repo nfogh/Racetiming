@@ -9,8 +9,8 @@ $masthead_text = "Race admin";
 require '_header.php';
 
 if (!isset($_POST['numberid']))
-    exit("Missing raceid parameter");
-$raceid = mysqli_real_escape_string($db, htmlspecialchars($_POST["numberid"]));
+    exit("Missing numberid parameter");
+$numberid = mysqli_real_escape_string($db, htmlspecialchars($_POST["numberid"]));
 
 if (!isset($_POST['timestamp']))
     exit("Missing timestamp parameter");

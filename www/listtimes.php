@@ -63,7 +63,7 @@ printf("</div>");
     $title = 'Runner times for ' . $name;
     $masthead_image = 'assets/races/smormosen.jpg';
     $masthead_text = $name;
-    $extraheaders = "<meta http-equiv=\"refresh\" content=\"5\">";
+#    $extraheaders = "<meta http-equiv=\"refresh\" content=\"5\">";
 
     require '_header.php';
     $now = new DateTime();
@@ -150,9 +150,13 @@ printf("</div>");
 
                             $total = end($timestamps)->getTimestamp() - $timestamps[0]->getTimestamp();
 
-                            $kmh = number_format(count($splits)*1.75/$total*3600, 1);
-                            $minkm = number_format(($total / 60) / (count($splits)*1.75), 1);
-                            
+                            if (count($splits) > 0) {
+                                $kmh = number_format(count($splits)*1.75/$total*3600, 1);
+                                $minkm = number_format(($total / 60) / (count($splits)*1.75), 1);
+                            } else {
+                                $kmh = 0;
+                                $minkm = 0;
+                            }
                             printf("<td><b><span data-tooltip title='{$kmh} km/h ({$minkm} min/km)'>" . sprintf('%02d:%02d:%02d', ($total / 3600),($total / 60 % 60), $total % 60) . "</span></b></td>");
                             
                             foreach ($splits as $split) {
@@ -194,12 +198,12 @@ printf("</div>");
     <div class="text-right">Updated at <?=$now->format("Y-m-d H:i:s") ?></div>
 
 <?php
-                    if (is_dir("./assets/races/{$raceid}")) {
-$images = array_filter(scandir("./assets/races/{$raceid}"), function($item) {
-    return !is_dir("./assets/races/{$raceid}/" . $item) && pathinfo($item, PATHINFO_EXTENSION) == "JPG";
-});
-                        }
-if ($images) {
+    if (is_dir("./assets/races/{$raceid}")) {
+        $images = array_filter(scandir("./assets/races/{$raceid}"), function($item) {
+            return !is_dir("./assets/races/{$raceid}/" . $item) && pathinfo($item, PATHINFO_EXTENSION) == "JPG";
+        });
+    }
+    if ($images) {
 ?>
 <div class="grid-x">
     <div class="cell small-1 large-3"></div>
@@ -258,7 +262,7 @@ if ($images) {
     src="https://maps.googleapis.com/maps/api/js?key=<?= $config['apikeys']['googlemaps'] ?>&callback=initMap">
 </script>
 
-<script>
+<script type="text/javascript">
 function initMap() {
   const race = { lat: <?= $latitude ?>, lng: <?= $longitude ?> };
   const map = new google.maps.Map(document.getElementById("map"), {
