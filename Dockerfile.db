@@ -4,3 +4,23 @@ ENV MYSQL_DATABASE=racetiming \
     MYSQL_ROOT_PASSWORD=e9w86036f78sd9
 	
 ADD data/initdb.sql /docker-entrypoint-initdb.d
+
+RUN echo "\n[mysqld]\n" \
+	 "innodb_buffer_pool_size = 32M\n" \
+	 "max_connections = 20\n" \
+	 "key_buffer_size = 8\n" \
+	 "thread_cache_size = 0\n" \
+	 "host_cache_size = 0\n" \
+	 "innodb_ft_cache_size = 1600000\n" \
+	 "innodb_ft_total_cache_size = 3200000\n" \
+	 "thread_stack=131072\n" \
+	 "sort_buffer_size=32K\n" \
+	 "read_buffer_size=8200\n" \
+	 "read_rnd_buffer_size=8200\n" \
+	 "max_heap_table_size=16K\n" \
+	 "tmp_table_size=1K\n" \
+	 "bulk_insert_buffer_size=0\n" \
+	 "join_buffer_size=128\n" \
+	 "net_buffer_length=1K\n" \
+	 "innodb_sort_buffer_size=64K\n" \
+	 "innodb_log_buffer_size = 256K\n" >> /etc/mysql/my.cnf

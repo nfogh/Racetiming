@@ -7,6 +7,7 @@
         $masthead_text = 'Select race';
 
         require '_header.php';
+
 ?>
 <div class="grid-container">
     <div class="grid-x grid-padding-x">
@@ -63,47 +64,33 @@ printf("</div>");
     $title = 'Runner times for ' . $name;
     $masthead_image = 'assets/races/smormosen.jpg';
     $masthead_text = $name;
-#    $extraheaders = "<meta http-equiv=\"refresh\" content=\"5\">";
 
     require '_header.php';
     $now = new DateTime();
-?>
 
-<?php
-    // Get the highest number of laps to format the table
-    if ($res = $db->query("SELECT runnerid, COUNT(*) as laps FROM events JOIN numbers ON (events.numberid = numbers.id) WHERE numbers.raceid={$raceid} GROUP BY runnerid ORDER BY laps DESC LIMIT 1")) {
-        if ($row = $res->fetch_assoc())
-            $maxlaps = $row["laps"] - 1;
-        $res->close();
-    }
-?>
+    $maxLaps = 0;
+    if ($res = $db->query("SELECT numbers.number, CONCAT(runners.name, ' ', runners.surname) as name, GROUP_CONCAT(CONCAT(timestamp, '|', event) ORDER BY timestamp SEPARATOR ',') AS events FROM events JOIN numbers ON (numbers.id = events.numberid) JOIN races ON (numbers.raceid = races.id) JOIN runners ON (runners.id = numbers.runnerid) WHERE (races.id=2) GROUP BY numberid ORDER BY numbers.number ASC")) {
+        $runners = Array();
+        while ($row = $res->fetch_assoc()) {
+            $number = $row["number"];
 
-<?php
-    // Get runner indexes for this run
-    $runners = array();
-    if ($res = $db->query('SELECT runners.id as id, numbers.number as number, runners.name as name, runners.surname as surname, numbers.expected_time as time, numbers.expected_laps as laps FROM numbers JOIN runners ON (runners.id = numbers.runnerid) WHERE numbers.raceid = ' . $raceid . ' ORDER BY number ASC')) {
-        while ($row = $res->fetch_assoc())
-            $runners[$row["number"]] = array(
-                'name' => $row['name'],
-                'id' => $row['id'],
-                'time' => $row['time'],
-                'laps' => $row['laps'],
-		'surname' => $row['surname']
-            );
-        $res->close();
+            $eventsList = explode(",", $row['events']);
+            $events = Array();
+            foreach ($eventsList as $event) {
+                list($timestamp, $type) = explode("|", $event);
+                $events[] = Array(
+                    "timestamp" => DateTime::createFromFormat("Y-m-d H:i:s", $timestamp),
+                    "type" => $type);
+            }
+            if (count($events) - 1 > $maxLaps)
+                $maxLaps = count($events) - 1;
+
+            $runners[$number] = Array(
+                "name" => $row["name"],
+                "events" => $events);
+        }
     } else {
-        die($db->error);
-    }
-?>
-
-<?php
-    // Get the highest number of laps to format the table
-    if ($res = $db->query('SELECT numbers.runnerid, COUNT(*) as laps FROM events JOIN numbers ON (numbers.id = events.numberid) WHERE raceid=' . $raceid . ' GROUP BY runnerid ORDER BY laps DESC LIMIT 1')) {
-        if ($row = $res->fetch_assoc())
-            $maxLaps = $row["laps"] - 1;
-        else
-            $maxLaps = 0;
-        $res->close();
+        die("Unable to execute query");
     }
 ?>
 
@@ -119,7 +106,7 @@ printf("</div>");
                 
         ?>
 
-        <table class="hover" width="80%">
+        <table>
         <thead>
             <tr><th>&#35;</th><th>Name</th>
             <?php
@@ -136,49 +123,37 @@ printf("</div>");
         <?php
             if ($now > $start) {
                 foreach ($runners as $number => $runner) {
-                    printf("<tr>");
-                    $numLapsCreated = 0;
-                    if ($res = $db->query("SELECT events.timestamp as timestamp, events.msecs as msecs, events.event as event, runners.name as name, runners.surname as surname, numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time FROM events JOIN numbers ON events.numberid = numbers.id JOIN runners ON runners.id = numbers.runnerid WHERE numbers.raceid=" . $raceid . " AND numbers.runnerid=" . $runner['id'] . " ORDER BY timestamp ASC, event ASC")) {
-                        if ($row = $res->fetch_assoc()) {
-                            printf("<td>" . $number . "</td><td>" . $row['name'] . " " . $row['surname'] . "</td>");
-                            $timestamps = [DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"])];
-                            while ($row = $res->fetch_assoc())
-                                array_push($timestamps, DateTime::createFromFormat("Y-m-d H:i:s", $row["timestamp"]));
-                            $splits = [];
-                            for ($idx = 0; $idx < count($timestamps) - 1; $idx++)
-                                array_push($splits, $timestamps[$idx + 1]->getTimestamp() - $timestamps[$idx]->getTimestamp());
-
-                            $total = end($timestamps)->getTimestamp() - $timestamps[0]->getTimestamp();
-
-                            if (count($splits) > 0) {
-                                $kmh = number_format(count($splits)*1.75/$total*3600, 1);
-                                $minkm = number_format(($total / 60) / (count($splits)*1.75), 1);
-                            } else {
-                                $kmh = 0;
-                                $minkm = 0;
-                            }
-                            printf("<td><b><span data-tooltip title='{$kmh} km/h ({$minkm} min/km)'>" . sprintf('%02d:%02d:%02d', ($total / 3600),($total / 60 % 60), $total % 60) . "</span></b></td>");
-                            
-                            foreach ($splits as $split) {
-                                $kmh = number_format(1.75/$split*3600, 1);
-                                $minkm = number_format(($split / 60) / 1.75, 1);
-                                printf("<td><span data-tooltip title='{$kmh} km/h ({$minkm} min/km)' style='font-weight:regular'>" . sprintf('%02d:%02d:%02d', ($split / 3600),($split / 60 % 60), $split % 60) . "</span></td>");
-                            }
-                            
-                             $numLapsCreated += count($splits);
-                        } else {
-                            printf("<td>{$number}</td><td>{$runner['name']} {$runner['surname']}</td><td><div style='color:gray'>00:{$runner['time']}:00</div></td>");
-                            for ($idx = 0; $idx < $runner['laps']; $idx++)
-                                printf("<td class='text-center'><div style='color:gray'>-</div></td>");
-                            $numLapsCreated += $runner['laps'];
-                        }
-
-                        for ($idx = $numLapsCreated; $idx <= $maxLaps; $idx++)
-                            printf('<td></td>');
-                        $res->close();
-                    }
-                    printf("</tr>\n");
-                }
+                   printf("<tr>");
+                   printf("<td>{$number}</td><td>{$runner['name']}</td>");
+                   $events = $runner['events'];
+                   $splits = Array();
+                   for ($idx = 0; $idx < count($events) - 1; $idx++)
+                       array_push($splits, $events[$idx + 1]["timestamp"]->getTimestamp() - $events[$idx]["timestamp"]->getTimestamp());
+            
+                   $total = end($events)["timestamp"]->getTimestamp() - $events[0]["timestamp"]->getTimestamp();
+            
+                   if (count($splits) > 0) {
+                       $kmh = number_format(count($splits)*1.75/$total*3600, 1);
+                       $minkm = number_format(($total / 60) / (count($splits)*1.75), 1);
+                   } else {
+                       $kmh = 0;
+                       $minkm = 0;
+                   }
+                   printf("<td><b><span data-tooltip title='{$kmh} km/h ({$minkm} min/km)'>" . sprintf('%02d:%02d:%02d', ($total / 3600),($total / 60 % 60), $total % 60) . "</span></b></td>");
+                   
+                   foreach ($splits as $split) {
+                       $kmh = number_format(1.75/$split*3600, 1);
+                       $minkm = number_format(($split / 60) / 1.75, 1);
+                       printf("<td><span data-tooltip title='{$kmh} km/h ({$minkm} min/km)' style='font-weight:regular'>" . sprintf('%02d:%02d:%02d', ($split / 3600),($split / 60 % 60), $split % 60) . "</span></td>");
+                   }
+                   
+                   $numLapsCreated += count($splits);
+            
+                   for ($idx = $numLapsCreated; $idx <= $maxLaps; $idx++)
+                       printf('<td></td>');
+                                                                                 
+                   printf("</tr>\n");
+               }
             } else {
                 foreach ($runners as $number => $runner) {
                     printf("<tr>");
