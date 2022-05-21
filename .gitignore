@@ -1,5 +1,7 @@
 database
 build
-config/config.ini
+www/config/config.ini
+www/config/myconfig.ini
 *~
 \#*
+.vscode

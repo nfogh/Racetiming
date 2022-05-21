@@ -4,6 +4,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QListView>
 #include <QMessageBox>
+#include <RFIDReaders/RFIDReaders.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,14 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&m_raceTimingInterface, &RaceTiming::RaceTimingInterface::gotRaces, this, &MainWindow::on_raceTimingInterface_gotRaces);
     connect(&m_raceTimingInterface, &RaceTiming::RaceTimingInterface::gotRunners, this, &MainWindow::on_raceTimingInterface_gotRunners);
-
-    m_rfidDevices.emplace_back(std::make_shared<QSerialPort>());
-    m_rfidDevices.emplace_back(std::make_shared<QSerialPort>());
-    m_rfidReaders.emplace_back(std::make_shared<M6ERFIDReader>(m_rfidDevices[0].get()));
-    m_rfidReaders.emplace_back(std::make_shared<M6ERFIDReader>(m_rfidDevices[1].get()));
-
-    connect(m_rfidReaders[0].get(), &M6ERFIDReader::rfidDetected, this, &MainWindow::on_RFID1Reader_rfidDetected);
-    connect(m_rfidReaders[1].get(), &M6ERFIDReader::rfidDetected, this, &MainWindow::on_RFID2Reader_rfidDetected);
 }
 
 MainWindow::~MainWindow()
@@ -86,59 +79,42 @@ void MainWindow::on_customEventTriggerPushButton_clicked()
     }
 }
 
-
 void MainWindow::on_connectRFID1ConnectPushButton_clicked()
 {
-    if (!m_rfidDevices[0]->isOpen()) {
-        m_rfidDevices[0]->setPortName(ui->connectRFID1ConnectionComboBox->getPort());
-        if (!m_rfidDevices[0]->open(QIODevice::ReadOnly)) {
-            QMessageBox::warning(this, "Warning", "Unable to open port " + ui->connectRFID1ConnectionComboBox->currentText() + ". " + m_rfidDevices[0]->errorString());
-            return;
-        }
-        m_rfidDevices[0]->setBaudRate(9600);
-        m_rfidDevices[0]->setParity(QSerialPort::NoParity);
-        m_rfidDevices[0]->setDataBits(QSerialPort::Data8);
-        m_rfidDevices[0]->setStopBits(QSerialPort::OneStop);
-        m_rfidDevices[0]->flush();
-        m_rfidReaders[0]->connect();
+    if (!m_rfidReaders[0]) {
+        m_rfidReaders[0] = RFIDReaders::CreateM6EReader(ui->connectRFID1ConnectionComboBox->getPort().toStdString());
+        m_rfidReaders[0]->setTagDetectedCallback([this](const auto& epc) { rfidDetected(0, QString::fromStdString(epc)); });
+        m_rfidReaders[0]->setConnectedCallback([this] {
+            ui->connectRFID1StatusLabel->setText("Connected");
+            ui->connectRFID1StatusLabel->setStyleSheet("color:green");});
+        m_rfidReaders[0]->setDisconnectedCallback([this]{
+            ui->connectRFID1StatusLabel->setText("Disconnected");
+            ui->connectRFID1StatusLabel->setStyleSheet("color : red");
+        });
         ui->connectRFID1ConnectPushButton->setText("Close");
     } else {
-        m_rfidReaders[0]->disconnect();
-        m_rfidDevices[0]->close();
+        m_rfidReaders[0].reset();
         ui->connectRFID1ConnectPushButton->setText("Open");
     }
 }
 
 void MainWindow::on_connectRFID2ConnectPushButton_clicked()
 {
-    if (!m_rfidDevices[1]->isOpen()) {
-        m_rfidDevices[1]->setPortName(ui->connectRFID2ConnectionComboBox->getPort());
-        if (!m_rfidDevices[1]->open(QIODevice::ReadOnly)) {
-            QMessageBox::warning(this, "Warning", "Unable to open port " + ui->connectRFID2ConnectionComboBox->currentText() + ". " + m_rfidDevices[1]->errorString());
-            return;
-        }
-        m_rfidDevices[1]->setBaudRate(9600);
-        m_rfidDevices[1]->setParity(QSerialPort::NoParity);
-        m_rfidDevices[1]->setDataBits(QSerialPort::Data8);
-        m_rfidDevices[1]->setStopBits(QSerialPort::OneStop);
-        m_rfidDevices[1]->flush();
-        m_rfidReaders[1]->connect();
+    if (!m_rfidReaders[1]) {
+        m_rfidReaders[1] = RFIDReaders::CreateM6EReader(ui->connectRFID2ConnectionComboBox->getPort().toStdString());
+        m_rfidReaders[1]->setTagDetectedCallback([this](const auto& epc) { rfidDetected(0, QString::fromStdString(epc)); });
+        m_rfidReaders[1]->setConnectedCallback([this] {
+            ui->connectRFID2StatusLabel->setText("Connected");
+            ui->connectRFID2StatusLabel->setStyleSheet("color:green");});
+        m_rfidReaders[1]->setDisconnectedCallback([this]{
+            ui->connectRFID2StatusLabel->setText("Disconnected");
+            ui->connectRFID2StatusLabel->setStyleSheet("color : red");
+        });
         ui->connectRFID2ConnectPushButton->setText("Close");
     } else {
-        m_rfidReaders[1]->disconnect();
-        m_rfidDevices[1]->close();
+        m_rfidReaders[1].reset();
         ui->connectRFID2ConnectPushButton->setText("Open");
     }
-}
-
-void MainWindow::on_RFID1Reader_rfidDetected(const QString& tid)
-{
-    rfidDetected(0, tid);
-}
-
-void MainWindow::on_RFID2Reader_rfidDetected(const QString& tid)
-{
-    rfidDetected(1, tid);
 }
 
 void MainWindow::rfidDetected(int readerIndex, const QString &tid)

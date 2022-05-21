@@ -11,14 +11,12 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Network SerialPort REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Network SerialPort REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Network REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Network REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
-        m6erfidreader.h
-        m6erfidreader.cpp
         racetiminginterface.h
         racetiminginterface.cpp
         racetimingtypes.h
@@ -51,7 +49,9 @@ else()
     endif()
 endif()
 
-target_link_libraries(racetiming PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network Qt${QT_VERSION_MAJOR}::SerialPort)
+add_subdirectory(LibRFIDReaders)
+
+target_link_libraries(racetiming PRIVATE RFIDReaders Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
 set_target_properties(racetiming PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
