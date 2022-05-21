@@ -149,6 +149,8 @@ void MainWindow::rfidDetected(int readerIndex, const QString &tid)
     if (!tids.empty()) {
         const auto tid = tids[0];
         const auto numberID = m_raceTimingInterface.GetRunnersTable().item(tid->row(), 2)->text().toInt();
+        const auto name = m_raceTimingInterface.GetRunnersTable().item(tid->row(), 0)->text();
+        const auto surname = m_raceTimingInterface.GetRunnersTable().item(tid->row(), 4)->text();
 
         RaceTiming::EventType event;
         if (readerIndex == 0) {
@@ -160,7 +162,7 @@ void MainWindow::rfidDetected(int readerIndex, const QString &tid)
         }
 
         ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
-        ui->eventsPlainTextEdit->insertPlainText("Number id " + QString::number(numberID) + " recorded " + (event == RaceTiming::EventType::LapStart ? "Start/Lap" : "Finish") + " event\n");
+        ui->eventsPlainTextEdit->insertPlainText(name + " " + surname + " - number id " + QString::number(numberID) + " recorded " + (event == RaceTiming::EventType::LapStart ? "Start/Lap" : "Finish") + " event\n");
         ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
 
         m_raceTimingInterface.sendEvent(

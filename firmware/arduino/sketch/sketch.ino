@@ -53,10 +53,72 @@ struct DetectedTag* FindFreeSpace(struct DetectedTag* const start, const int lis
 #define NUMDETECTEDTAGS 20
 struct DetectedTag detectedTags[NUMDETECTEDTAGS] = {0};
 
+byte nibble(char c)
+{
+  if (c >= '0' && c <= '9')
+    return c - '0';
+
+  if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+
+  return 0;  // Not a valid hexadecimal character
+}
+
+void hexCharacterStringToBytes(byte *byteArray, const char *hexString)
+{
+  bool oddLength = strlen(hexString) & 1;
+
+  byte currentByte = 0;
+  byte byteIndex = 0;
+
+  for (byte charIndex = 0; charIndex < strlen(hexString); charIndex++)
+  {
+    bool oddCharIndex = charIndex & 1;
+
+    if (oddLength)
+    {
+      // If the length is odd
+      if (oddCharIndex)
+      {
+        // odd characters go in high nibble
+        currentByte = nibble(hexString[charIndex]) << 4;
+      }
+      else
+      {
+        // Even characters go into low nibble
+        currentByte |= nibble(hexString[charIndex]);
+        byteArray[byteIndex++] = currentByte;
+        currentByte = 0;
+      }
+    }
+    else
+    {
+      // If the length is even
+      if (!oddCharIndex)
+      {
+        // Odd characters go into the high nibble
+        currentByte = nibble(hexString[charIndex]) << 4;
+      }
+      else
+      {
+        // Odd characters go into low nibble
+        currentByte |= nibble(hexString[charIndex]);
+        byteArray[byteIndex++] = currentByte;
+        currentByte = 0;
+      }
+    }
+  }
+}
+
 void setup()
 {
   Serial.begin(9600);
   while (!Serial); //Wait for the serial port to come online
+
+  Serial.setTimeout(100);
 
   if (setupNano(38400) == false) //Configure nano to run at 38400bps
   {
@@ -66,7 +128,7 @@ void setup()
 
   nano.setRegion(REGION_EUROPE);
 
-  nano.setReadPower(1000); //5.00 dBm. Higher values may caues USB port to brown out
+  nano.setReadPower(2700); //5.00 dBm. Higher values may caues USB port to brown out
   //Max Read TX Power is 27.00 dBm and may cause temperature-limit throttling
 
   pinMode(BUZZER1, OUTPUT);
@@ -113,10 +175,33 @@ void loop()
     }
     buzzerTimeout = millis() + 100;
   }
+
+  if (Serial.available() > 0) {
+    const String s = Serial.readString();
+    if (s.startsWith("setid")) {
+      String id = s.substring(6);
+      id.trim();
+      byte hex[20];
+      hexCharacterStringToBytes(hex, id.c_str());
+
+      Serial.print("Writing ID '");
+      for (int i = 0; i < id.length()/2; i++) {
+        Serial.print(hex[i], HEX);
+      }
+      Serial.println("'");
+      nano.writeTagEPC((const char*)hex, id.length()/2);
+    } else if (s.startsWith("stop")) {
+      Serial.println("Stopping reading");
+      nano.stopReading();
+    } else if (s.startsWith("start")) {
+      Serial.println("Starting reading");
+      nano.startReading(); //Begin scanning for tags
+    }
+  }
   
   if (nano.check() == true) //Check to see if any new data has come in from module
   {
-    byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
+    const byte responseType = nano.parseResponse(); //Break response into tag ID, RSSI, frequency, and timestamp
 
     if (responseType == RESPONSE_IS_KEEPALIVE)
     {
