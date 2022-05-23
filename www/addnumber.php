@@ -3,6 +3,7 @@ $title = 'Add number';
 $masthead_image = 'assets/images/masthead.jpg';
 $masthead_text = "Race admin";
 require '_init.php';
+require '_adminpage.php';
 require '_header.php';
 ?>
 

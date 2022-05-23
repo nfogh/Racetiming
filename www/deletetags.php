@@ -11,7 +11,7 @@ require '_header.php';
 <?php
 $ids = [];
 foreach ($_POST['check'] as $id => $value)
-    array_push($ids, "0x$id");
+    array_push($ids, "$id");
 
 $sql = "DELETE FROM rfidtags WHERE id IN (" . implode(", ", $ids) . ")";
 
