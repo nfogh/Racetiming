@@ -16,14 +16,20 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Network REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
+
         mainwindow.cpp
+        mainwindow.h
+        mainwindow.ui
+
         racetiminginterface.h
         racetiminginterface.cpp
         racetimingtypes.h
-        mainwindow.h
-        mainwindow.ui
         qserialportcombobox.h
         qserialportcombobox.cpp
+
+        activerunnersform.h
+        activerunnersform.cpp
+        activerunnersform.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -49,9 +55,9 @@ else()
     endif()
 endif()
 
-add_subdirectory(LibRFIDReaders)
+add_subdirectory(LibRFIDRW)
 
-target_link_libraries(racetiming PRIVATE RFIDReaders Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(racetiming PRIVATE RFIDRW Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
 set_target_properties(racetiming PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

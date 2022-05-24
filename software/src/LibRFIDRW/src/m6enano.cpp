@@ -1,6 +1,6 @@
-#include "m6erfidreader.h"
-namespace RFIDReaders {
-M6ERFIDReader::M6ERFIDReader(const std::string& portName)
+#include "m6enano.h"
+namespace RFIDRW {
+M6ENano::M6ENano(const std::string& portName)
     : m_serialPort(QString::fromStdString(portName))
 {
     if (!m_serialPort.open(QIODevice::ReadWrite))
@@ -22,32 +22,37 @@ M6ERFIDReader::M6ERFIDReader(const std::string& portName)
     m_watchdogTimer.start();
 }
 
-void M6ERFIDReader::start()
+void M6ENano::start()
 {
     m_serialPort.write("start");
 }
 
-void M6ERFIDReader::stop()
+void M6ENano::stop()
 {
     m_serialPort.write("stop");
 }
 
-void M6ERFIDReader::setTagDetectedCallback(const TagDetectedCallbackFunc &callback)
+void M6ENano::writeEPC(const std::string &epc)
+{
+    m_serialPort.write(QString::fromStdString("settag," + epc).toLatin1());
+}
+
+void M6ENano::setTagDetectedCallback(const TagDetectedCallbackFunc &callback)
 {
     m_tagDetectedCallback = callback;
 }
 
-void M6ERFIDReader::setConnectedCallback(const ConnectedCallbackFunc &callback)
+void M6ENano::setConnectedCallback(const ConnectedCallbackFunc &callback)
 {
     m_connectedCallback = callback;
 }
 
-void M6ERFIDReader::setDisconnectedCallback(const DisconnectedCallbackFunc &callback)
+void M6ENano::setDisconnectedCallback(const DisconnectedCallbackFunc &callback)
 {
     m_disconnectedCallback = callback;
 }
 
-void M6ERFIDReader::on_serialPort_readyRead()
+void M6ENano::on_serialPort_readyRead()
 {
     while (m_serialPort.canReadLine()) {
         const auto line = QString(m_serialPort.readLine()).trimmed();

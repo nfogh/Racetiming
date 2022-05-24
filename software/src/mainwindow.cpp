@@ -4,7 +4,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QListView>
 #include <QMessageBox>
-#include <RFIDReaders/RFIDReaders.h>
+#include <RFIDRW/RFIDRW.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -44,7 +44,6 @@ void MainWindow::on_raceConnectionsConnectButton_clicked()
     m_raceTimingInterface.getRaces();
 }
 
-
 void MainWindow::on_getRunnersPushButton_clicked()
 {
     const auto id = m_raceTimingInterface.GetRacesTable().item(ui->availableRacesComboBox->currentIndex())->text().toInt();
@@ -82,7 +81,7 @@ void MainWindow::on_customEventTriggerPushButton_clicked()
 void MainWindow::on_connectRFID1ConnectPushButton_clicked()
 {
     if (!m_rfidReaders[0]) {
-        m_rfidReaders[0] = RFIDReaders::CreateM6EReader(ui->connectRFID1ConnectionComboBox->getPort().toStdString());
+        m_rfidReaders[0] = RFIDRW::CreateM6EReader(ui->connectRFID1ConnectionComboBox->getPort().toStdString());
         m_rfidReaders[0]->setTagDetectedCallback([this](const auto& epc) { rfidDetected(0, QString::fromStdString(epc)); });
         m_rfidReaders[0]->setConnectedCallback([this] {
             ui->connectRFID1StatusLabel->setText("Connected");
@@ -101,7 +100,7 @@ void MainWindow::on_connectRFID1ConnectPushButton_clicked()
 void MainWindow::on_connectRFID2ConnectPushButton_clicked()
 {
     if (!m_rfidReaders[1]) {
-        m_rfidReaders[1] = RFIDReaders::CreateM6EReader(ui->connectRFID2ConnectionComboBox->getPort().toStdString());
+        m_rfidReaders[1] = RFIDRW::CreateM6EReader(ui->connectRFID2ConnectionComboBox->getPort().toStdString());
         m_rfidReaders[1]->setTagDetectedCallback([this](const auto& epc) { rfidDetected(0, QString::fromStdString(epc)); });
         m_rfidReaders[1]->setConnectedCallback([this] {
             ui->connectRFID2StatusLabel->setText("Connected");

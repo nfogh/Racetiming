@@ -3,7 +3,9 @@
 
 #include <QMainWindow>
 #include "racetiminginterface.h"
-#include <RFIDReaders/IRFIDReader.h>
+#include <RFIDRW/IRFIDRW.h>
+#include <array>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -38,7 +40,7 @@ private:
 
     Ui::MainWindow *ui;
 
-    std::array<std::unique_ptr<RFIDReaders::IRFIDReader>, 2> m_rfidReaders;
+    std::array<std::unique_ptr<RFIDRW::IRFIDRW>, 2> m_rfidReaders;
 
     RaceTiming::RaceTimingInterface m_raceTimingInterface;
 };

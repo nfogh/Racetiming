@@ -1,22 +1,24 @@
-#ifndef M6ERFIDREADER_H
-#define M6ERFIDREADER_H
+#pragma once
 
-#include "IRFIDReader.h"
+#include "IRFIDRW.h"
 #include <QSerialPort>
 #include <QTimer>
 
-namespace RFIDReaders {
-class M6ERFIDReader : public IRFIDReader
+namespace RFIDRW {
+class M6ENano : public IRFIDRW
 {
 public:
-    explicit M6ERFIDReader(const std::string& portName);
+    explicit M6ENano(const std::string& portName);
 
     void start() override;
     void stop() override;
 
+    void writeEPC(const std::string &epc) override;
+
     void setTagDetectedCallback(const TagDetectedCallbackFunc& callback) override;
     void setConnectedCallback(const ConnectedCallbackFunc& callback) override;
     void setDisconnectedCallback(const DisconnectedCallbackFunc& callback) override;
+    ~M6ENano() override = default;
 
 private:
     TagDetectedCallbackFunc m_tagDetectedCallback;
@@ -31,4 +33,3 @@ private:
     QTimer m_watchdogTimer;
 };
 }
-#endif // M6ERFIDREADER_H

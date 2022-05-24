@@ -9,7 +9,6 @@ namespace RaceTiming {
         m_url("http://" + url.toString()),
         m_apiKey(apiKey)
     {
-        m_networkAccessManager.setAutoDeleteReplies(true);
         QObject::connect(&m_networkAccessManager, &QNetworkAccessManager::finished, this, &RaceTimingInterface::networkAccessManager_finished);
     }
 
@@ -58,13 +57,13 @@ namespace RaceTiming {
             ParseJson(runners, m_runnersTable);
             emit gotRunners();
         }
+        reply->deleteLater();
     }
 
     void RaceTimingInterface::getRaces()
     {
-        const QUrlQuery query({
-                            {"apikey", m_apiKey}
-                        });
+        QUrlQuery query;
+        query.addQueryItem("apikey", m_apiKey);
         const auto url = m_url.toString() + "/getraces_rest.php?" + query.toString();
         qDebug() << "Requesting " + url;
         m_networkAccessManager.get(QNetworkRequest(url));
@@ -72,10 +71,10 @@ namespace RaceTiming {
 
     void RaceTimingInterface::getRunners(const int raceID)
     {
-        const QUrlQuery query({
-                            {"apikey", m_apiKey},
-                            {"raceid", QString::number(raceID)}
-                        });
+        QUrlQuery query;
+        query.addQueryItem("apikey", m_apiKey);
+        query.addQueryItem("raceid", QString::number(raceID));
+
         const auto url = m_url.toString() + "/getrunners_rest.php?" + query.toString();
         qDebug() << "Requesting " + url;
         m_networkAccessManager.get(QNetworkRequest(url));
@@ -83,13 +82,12 @@ namespace RaceTiming {
 
     void RaceTimingInterface::sendEvent(int numberID, QDateTime timestamp, EventType event)
     {
-        const QUrlQuery postData({
-                            {"apikey", m_apiKey},
-                            {"numberid", QString::number(numberID)},
-                            {"timestamp", timestamp.toString("yyyy-MM-dd hh:mm:ss")},
-                            {"msecs", timestamp.toString("zzz")},
-                            {"event", QString::number(static_cast<int>(event))}
-                        });
+        QUrlQuery postData;
+        postData.addQueryItem("apikey", m_apiKey);
+        postData.addQueryItem("numberid", QString::number(numberID));
+        postData.addQueryItem("timestamp", timestamp.toString("yyyy-MM-dd hh:mm:ss"));
+        postData.addQueryItem("msecs", timestamp.toString("zzz"));
+        postData.addQueryItem("event", QString::number(static_cast<int>(event)));
 
         QNetworkRequest request(m_url.toString() + "/addevent_rest.php");
         request.setHeader(QNetworkRequest::ContentTypeHeader,
