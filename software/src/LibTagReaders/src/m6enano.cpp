@@ -1,10 +1,14 @@
 #include "m6enano.h"
-namespace RFIDRW {
-M6ENano::M6ENano(const std::string& portName)
-    : m_serialPort(QString::fromStdString(portName))
+#include <thread>
+#include <QDebug>
+#include <QCoreApplication>
+
+namespace TagReaders {
+M6ENano::M6ENano(const std::string_view portName)
+    : m_serialPort(QString::fromStdString(std::string(portName)))
 {
     if (!m_serialPort.open(QIODevice::ReadWrite))
-        throw std::runtime_error("Unable to open serial port " + portName + ": " + m_serialPort.errorString().toStdString());
+        throw std::runtime_error("Unable to open serial port " + std::string(portName) + ": " + m_serialPort.errorString().toStdString());
 
     m_serialPort.setBaudRate(9600);
     m_serialPort.setParity(QSerialPort::NoParity);
@@ -20,22 +24,36 @@ M6ENano::M6ENano(const std::string& portName)
         m_connected = false;
     });
     m_watchdogTimer.start();
+    m_serialPort.write("start");
 }
 
 void M6ENano::start()
 {
     m_serialPort.write("start");
+    qDebug() << "Sent: start";
 }
 
 void M6ENano::stop()
 {
     m_serialPort.write("stop");
+    qDebug() << "Sent: stop";
 }
 
-void M6ENano::writeEPC(const std::string &epc)
+/*void M6ENano::writeEPC(const std::string &epc)
 {
-    m_serialPort.write(QString::fromStdString("settag," + epc).toLatin1());
-}
+    stop();
+    QCoreApplication::processEvents();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    QCoreApplication::processEvents();
+    m_serialPort.write(QString::fromStdString("setid," + epc).toLatin1());
+    QCoreApplication::processEvents();
+    qDebug() << QString("Sent: setid,") + QString::fromStdString(epc);
+    QCoreApplication::processEvents();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    QCoreApplication::processEvents();
+    start();
+    QCoreApplication::processEvents();
+}*/
 
 void M6ENano::setTagDetectedCallback(const TagDetectedCallbackFunc &callback)
 {
@@ -56,6 +74,7 @@ void M6ENano::on_serialPort_readyRead()
 {
     while (m_serialPort.canReadLine()) {
         const auto line = QString(m_serialPort.readLine()).trimmed();
+        qDebug() << "Received: " << line;
         const auto tokens = line.split(",");
         if (tokens.size() == 2) {
             if (tokens[0] == "TAGID") {

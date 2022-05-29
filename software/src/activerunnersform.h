@@ -1,5 +1,4 @@
-#ifndef ACTIVERUNNERSFORM_H
-#define ACTIVERUNNERSFORM_H
+#pragma once
 
 #include <QWidget>
 #include <QTimer>
@@ -27,6 +26,8 @@ private slots:
 private:
     Ui::ActiveRunnersForm *ui;
 
+    void updateUI();
+
     struct ActiveRunner {
         std::string name;
         std::chrono::steady_clock::time_point start;
@@ -40,5 +41,3 @@ private:
 
     QTimer m_timer;
 };
-
-#endif // ACTIVERUNNERSFORM_H

@@ -1,19 +1,17 @@
 #pragma once
 
-#include "IRFIDRW.h"
+#include "ITagReader.h"
 #include <QSerialPort>
 #include <QTimer>
 
-namespace RFIDRW {
-class M6ENano : public IRFIDRW
+namespace TagReaders {
+class M6ENano : public ITagReader
 {
 public:
-    explicit M6ENano(const std::string& portName);
+    explicit M6ENano(std::string_view portName);
 
     void start() override;
     void stop() override;
-
-    void writeEPC(const std::string &epc) override;
 
     void setTagDetectedCallback(const TagDetectedCallbackFunc& callback) override;
     void setConnectedCallback(const ConnectedCallbackFunc& callback) override;
