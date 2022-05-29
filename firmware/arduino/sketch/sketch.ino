@@ -26,14 +26,14 @@ unsigned long buzzerTimeout = 0;
 
 struct DetectedTag
 {
-  uint32_t id;
+  byte id[12];
   uint32_t detectedTime;
 };
 
-struct DetectedTag* FindTag(struct DetectedTag* const start, const int listSize, uint32_t id)
+struct DetectedTag* FindTag(struct DetectedTag* const start, const int listSize, byte* id)
 {
   for (int i = 0; i < listSize; i++) {
-    if (start[i].id == id)
+    if (memcmp(start[i].id, id, 12))
       return &start[i];
   }
   return 0;
@@ -131,6 +131,7 @@ void setup()
   nano.setReadPower(2700); //5.00 dBm. Higher values may caues USB port to brown out
   //Max Read TX Power is 27.00 dBm and may cause temperature-limit throttling
 
+  nano.setWritePower(2700);
   pinMode(BUZZER1, OUTPUT);
   pinMode(BUZZER2, OUTPUT);
 
@@ -139,6 +140,8 @@ void setup()
   Serial.println("Initialized");
 
   nano.startReading(); //Begin scanning for tags
+
+  pinMode(7, OUTPUT);
 }
 
 uint32_t bytesToUInt32(byte* bytes)
@@ -153,6 +156,7 @@ void loop()
   if (millis() > buzzerTimeout) {
     switch (buzzerTone) {
       case 1:
+        digitalWrite(7, HIGH);
         buzzerTone = 2349;
         buzzerTimeout = millis() + 10;
         break;
@@ -165,6 +169,7 @@ void loop()
         buzzerTimeout = millis() + 150;
         break;
       case 3136:
+        digitalWrite(7, LOW);
         buzzerTone = 0;
         break;
     }
@@ -212,13 +217,15 @@ void loop()
       byte tagEPCBytes = nano.getTagEPCBytes(); //Get the number of bytes of EPC from response
 
       if (tagEPCBytes < 4) {
-        Serial.println("TAG EPC bytes less than 4");
+        Serial.println("TAG EPC bytes less than 12");
         return;
       }
+      byte tagEPC[12] = {0};
 
-      const uint32_t id = bytesToUInt32(&nano.msg[31]);
+      for (byte x = 0 ; x < tagEPCBytes ; x++)
+        tagEPC[x] = nano.msg[31 + x]; 
 
-      struct DetectedTag* tag = FindTag(detectedTags, ARRAYSIZE(detectedTags), id);
+      struct DetectedTag* tag = FindTag(detectedTags, ARRAYSIZE(detectedTags), tagEPC);
       if (tag != 0) {
           // The tag was detected within the cooldown time
           const uint32_t msSinceDetection = millis() - tag->detectedTime;
@@ -233,7 +240,7 @@ void loop()
       } else {
         struct DetectedTag* tag = FindFreeSpace(detectedTags, ARRAYSIZE(detectedTags));
         if (tag != 0) {
-            tag->id = id;
+            memcpy(tag->id, tagEPC, 12);
             tag->detectedTime = millis();
         } else {
             Serial.println("Not enough space in list");
@@ -242,7 +249,12 @@ void loop()
       }
 
       Serial.print("TAGID,");
-      Serial.println(id, HEX);
+      for (int i = 0; i < 12; i++) {
+        if (tagEPC[i] < 16)
+          Serial.print("0");
+        Serial.print(tagEPC[i], HEX);
+      }
+      Serial.println();
 
       buzzerTone = 1;
       buzzerTimeout = millis();
