@@ -39,21 +39,21 @@ void M6ENano::stop()
     qDebug() << "Sent: stop";
 }
 
-/*void M6ENano::writeEPC(const std::string &epc)
+void M6ENano::writeTag(std::string_view tag)
 {
     stop();
     QCoreApplication::processEvents();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     QCoreApplication::processEvents();
-    m_serialPort.write(QString::fromStdString("setid," + epc).toLatin1());
+    m_serialPort.write(QString::fromStdString("setid," + std::string(tag)).toLatin1());
     QCoreApplication::processEvents();
-    qDebug() << QString("Sent: setid,") + QString::fromStdString(epc);
+    qDebug() << QString("Sent: setid,") + QString::fromStdString(std::string(tag));
     QCoreApplication::processEvents();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     QCoreApplication::processEvents();
     start();
     QCoreApplication::processEvents();
-}*/
+}
 
 void M6ENano::setTagDetectedCallback(const TagDetectedCallbackFunc &callback)
 {

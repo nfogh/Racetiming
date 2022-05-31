@@ -1,4 +1,5 @@
 #include "RunnersTableModel.h"
+#include <QColor>
 
 RunnersTableModel::RunnersTableModel(QObject *parent)
     : QAbstractTableModel(parent)
@@ -28,23 +29,37 @@ std::string mergeStrings(Iterator begin, const Iterator end, const Delim& d)
 
 QVariant RunnersTableModel::data(const QModelIndex &index, int role) const
 {
-    if (role == Qt::DisplayRole || role == Qt::EditRole) {
-        const auto& runner = m_runners[index.row()];
-        switch (index.column()) {
-        case id_col:           return runner.id;
-        case number_col:       return runner.number;
-        case name_col:         return QString::fromStdString(runner.name);
-        case surname_col:      return QString::fromStdString(runner.surname);
-        case numberid_col:     return runner.numberid;
-        case tag_col:          return QString::fromStdString(mergeStrings(runner.tags.cbegin(), runner.tags.cend(), ","));
-        case lapButton_col:    return QVariant();
-        case finishButton_col: return QVariant();
-        case attachTag_col:    return QVariant();
-        default:
-            throw std::out_of_range("Column index is out of range");
+    switch (role) {
+        case Qt::DisplayRole:
+        case Qt::EditRole:
+        {
+            const auto& runner = m_runners[index.row()];
+            switch (index.column()) {
+            case id_col:           return runner.id;
+            case number_col:       return runner.number;
+            case name_col:         return QString::fromStdString(runner.name);
+            case surname_col:      return QString::fromStdString(runner.surname);
+            case numberid_col:     return runner.numberid;
+/*            case tag_col: {
+                QStringList stringList;
+                for (const auto& tag : runner.tags)
+                    stringList.append(QString::fromStdString(tag));
+                return stringList;
+            }*/
+            case tag_col:          return QString::fromStdString(mergeStrings(runner.tags.cbegin(), runner.tags.cend(), ","));
+            case lapButton_col:    return QVariant();
+            case finishButton_col: return QVariant();
+            case attachTag_col:    return QVariant();
+            default:
+                throw std::out_of_range("Column index is out of range");
+            }
         }
+    case Qt::ForegroundRole:
+        if (m_selectedRowIndex && *m_selectedRowIndex == index.row())
+            return QColor(Qt::green);
+    default:
+        return QVariant();
     }
-    return QVariant();
 }
 
 void RunnersTableModel::setData(const RacetimingInterface::RunnersTable &runners)
@@ -78,6 +93,16 @@ void RunnersTableModel::setData(const RacetimingInterface::RunnersTable &runners
 
     for (const auto& index : changedIndices)
         emit dataChanged(index, index, {Qt::DisplayRole});
+}
+
+void RunnersTableModel::setSelectedRowIndex(std::optional<int> rowIndex)
+{
+    const auto prevSelectedRowIndex = m_selectedRowIndex;
+    m_selectedRowIndex = rowIndex;
+    if (prevSelectedRowIndex && rowIndex && *prevSelectedRowIndex != *rowIndex) {
+        emit dataChanged(createIndex(*prevSelectedRowIndex, 0), createIndex(*prevSelectedRowIndex, columnCount() - 1), {Qt::ForegroundRole});
+        emit dataChanged(createIndex(*rowIndex, 0), createIndex(*rowIndex, columnCount() - 1), {Qt::ForegroundRole});
+    }
 }
 
 QVariant RunnersTableModel::headerData(int section, Qt::Orientation orientation, int role) const

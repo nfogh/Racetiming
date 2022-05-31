@@ -1,23 +1,35 @@
 #include "activerunnersform.h"
 #include "qgridlayout.h"
-#include "ui_activerunnersform.h"
 
 ActiveRunnersForm::ActiveRunnersForm(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::ActiveRunnersForm)
+    QWidget(parent)
 {
-    ui->setupUi(this);
-
-    m_timer.setInterval(100);
+    // This should be some odd number that makes it appear as if the numbers are
+    // counting very fast, without actually changing that fast.
+    m_timer.setInterval(37);
+    connect(&m_timer, &QTimer::timeout, this, &ActiveRunnersForm::timer_timeout);
     m_timer.start();
-    connect(&m_timer, QTimer::timeout, this, ActiveRunnersForm::on_timer_timeout);
 }
 
-void ActiveRunnersForm::on_timer_timeout()
+void ActiveRunnersForm::timer_timeout()
 {
     const auto now = std::chrono::steady_clock::now();
+
+    // First, clean up finished runners after some time
+    auto it = m_runners.begin();
+    while (it != m_runners.end()) {
+        if (it->stop && (now > *it->stop + std::chrono::seconds(20))) {
+            delete it->nameLabel;
+            delete it->timeLabel;
+            it = m_runners.erase(it);
+        } else {
+            it++;
+        }
+    }
+
     for (const auto& runner : m_runners) {
-        const auto dt = now - runner.start;
+        const auto dt = runner.stop? *runner.stop - runner.start : now - runner.start;
+
         const auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() % 1000;
         const auto time_s = std::chrono::duration_cast<std::chrono::seconds>(dt).count() % 60;
         const auto time_m = std::chrono::duration_cast<std::chrono::minutes>(dt).count() % 60;
@@ -30,6 +42,13 @@ void ActiveRunnersForm::on_timer_timeout()
             str = QString("%1:").arg(time_h, 2, 10, QChar('0')) + str;
 
         runner.timeLabel->setText(str);
+
+        if (runner.stop) {
+            auto palette = runner.timeLabel->palette();
+            palette.setColor(runner.timeLabel->foregroundRole(), Qt::green);
+            runner.timeLabel->setPalette(palette);
+            runner.nameLabel->setPalette(palette);
+        }
     }
 }
 
@@ -46,7 +65,6 @@ void ActiveRunnersForm::updateUI()
 
 ActiveRunnersForm::~ActiveRunnersForm()
 {
-    delete ui;
 }
 
 void ActiveRunnersForm::runnerStart(const std::string &name)
@@ -74,10 +92,6 @@ void ActiveRunnersForm::runnerStart(const std::string &name)
 void ActiveRunnersForm::runnerFinish(const std::string &name)
 {
     const auto it = std::find_if(m_runners.begin(), m_runners.end(), [&name](const auto& runner){ return runner.name == name; });
-    if (it != m_runners.end()) {
-        delete it->nameLabel;
-        delete it->timeLabel;
-        m_runners.erase(it);
-        updateUI();
-    }
+    if (it != m_runners.end())
+        it->stop = std::chrono::steady_clock::now();
 }

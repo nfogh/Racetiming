@@ -33,7 +33,6 @@ set(PROJECT_SOURCES
 
         activerunnersform.h
         activerunnersform.cpp
-        activerunnersform.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

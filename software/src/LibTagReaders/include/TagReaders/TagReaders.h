@@ -4,5 +4,5 @@
 #include "ITagReader.h"
 
 namespace TagReaders {
-    std::unique_ptr<ITagReader> CreateM6EReader(std::string_view port);
+    std::unique_ptr<ITagReaderWriter> CreateM6EReader(std::string_view port);
 }

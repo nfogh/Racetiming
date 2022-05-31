@@ -6,9 +6,15 @@
 #include <QDebug>
 
 namespace RacetimingInterface {
-    WebRacetimingInterface::WebRacetimingInterface(const std::string_view endpoint, const std::string_view apiKey) :
+    WebRacetimingInterface::WebRacetimingInterface(
+        const std::string_view endpoint,
+        const std::string_view apiKey,
+        const RacesTableUpdatedCallback& racesTableUpdatedCallback,
+        const RunnersTableUpdatedCallback& runnersTableUpdatedCallback) :
         m_endpoint(endpoint),
-        m_apiKey(apiKey)
+        m_apiKey(apiKey),
+        m_racesTableUpdatedCallback(racesTableUpdatedCallback),
+        m_runnersTableUpdatedCallback(runnersTableUpdatedCallback)
     {
         QObject::connect(&m_networkAccessManager, &QNetworkAccessManager::finished, this, &WebRacetimingInterface::networkAccessManager_finished);
     }

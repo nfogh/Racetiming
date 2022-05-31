@@ -6,7 +6,10 @@ namespace RacetimingInterface {
     class TestRacetimingInterface : public IRacetimingInterface
     {
     public:
-        TestRacetimingInterface();
+        TestRacetimingInterface(
+            const RacesTableUpdatedCallback& racesTableUpdatedCallback,
+            const RunnersTableUpdatedCallback& runnersTableUpdatedCallback
+        );
 
         void setRacesTableUpdatedCallback(const RacesTableUpdatedCallback& callback) override { m_racesTableUpdatedCallback = callback; }
         void setRunnersTableUpdatedCallback(const RunnersTableUpdatedCallback& callback) override { m_runnersTableUpdatedCallback = callback; }

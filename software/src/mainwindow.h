@@ -26,16 +26,12 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_racetimingInterface_racesUpdated();
-    void on_racetimingInterface_runnersUpdated();
+    void racetimingInterface_racesUpdated();
+    void racetimingInterface_runnersUpdated();
 
     void on_raceConnectionsConnectButton_clicked();
 
     void on_getRunnersPushButton_clicked();
-
-    void on_customEventInsertPushButton_clicked();
-
-    void on_customEventTriggerPushButton_clicked();
 
     void on_connectRFID1ConnectPushButton_clicked();
 
@@ -49,6 +45,10 @@ private slots:
 
     void on_startRacePushButton_toggled(bool checked);
 
+    void on_connectTestPushButton_clicked();
+
+    void on_connectLocalPushButton_clicked();
+
 private:
     void tagDetected(int readerIndex, std::string_view epc);
     void updateWriteTagsLabels();
@@ -58,7 +58,7 @@ private:
 
     Ui::MainWindow *ui;
 
-    std::array<std::unique_ptr<TagReaders::ITagReader>, 2> m_tagReaders;
+    std::array<std::unique_ptr<TagReaders::ITagReaderWriter>, 2> m_tagReaders;
 
     std::unique_ptr<RacetimingInterface::IRacetimingInterface> m_racetimingInterface;
 

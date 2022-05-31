@@ -3,6 +3,8 @@
 #include <QAbstractTableModel>
 #include <RacetimingInterface/RacetimingTypes.h>
 
+#include <optional>
+
 class RunnersTableModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -26,6 +28,9 @@ public:
 
     void setData(const RacetimingInterface::RunnersTable& races);
 
+    void setSelectedRowIndex(std::optional<int> rowIndex = std::nullopt);
+
 private:
     RacetimingInterface::RunnersTable m_runners;
+    std::optional<int> m_selectedRowIndex = std::nullopt;
 };

@@ -1,7 +1,11 @@
 #include "TestRacetimingInterface.h"
 
 namespace RacetimingInterface {
-    TestRacetimingInterface::TestRacetimingInterface()
+    TestRacetimingInterface::TestRacetimingInterface(
+        const RacesTableUpdatedCallback& racesTableUpdatedCallback,
+        const RunnersTableUpdatedCallback& runnersTableUpdatedCallback) :
+        m_racesTableUpdatedCallback(racesTableUpdatedCallback),
+        m_runnersTableUpdatedCallback(runnersTableUpdatedCallback)
     {
     }
 

@@ -20,4 +20,12 @@ namespace TagReaders {
 
         virtual ~ITagReader() = default;
     };
+
+    class ITagWriter
+    {
+    public:
+        virtual void writeTag(std::string_view tag) = 0;
+    };
+
+    class ITagReaderWriter : public ITagReader, public ITagWriter {};
 }

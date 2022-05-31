@@ -5,13 +5,15 @@
 #include <QTimer>
 
 namespace TagReaders {
-class M6ENano : public ITagReader
+class M6ENano : public ITagReaderWriter
 {
 public:
     explicit M6ENano(std::string_view portName);
 
     void start() override;
     void stop() override;
+
+    void writeTag(std::string_view tag) override;
 
     void setTagDetectedCallback(const TagDetectedCallbackFunc& callback) override;
     void setConnectedCallback(const ConnectedCallbackFunc& callback) override;

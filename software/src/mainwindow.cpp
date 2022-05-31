@@ -17,7 +17,7 @@ struct tm Now()
 #ifdef WIN32
     ::localtime_s(&time, &t);
 #else
-    ::localtime_s(&t, &time);
+    ::localtime_r(&t, &time);
 #endif
     return time;
 }
@@ -56,7 +56,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_tagWriterDataWidgetMapper.setModel(&m_runnersTableModel);
     m_tagWriterDataWidgetMapper.addMapping(ui->writeTagNameLabel, RunnersTableModel::name_col, "text");
-    m_tagWriterDataWidgetMapper.addMapping(ui->writeTagEPCLabel, RunnersTableModel::tag_col, "text");
+    ui->writeTagTagComboBox->setModel(&m_runnersTableModel);
+    ui->writeTagTagComboBox->setModelColumn(RunnersTableModel::tag_col);
+
+    //m_tagWriterDataWidgetMapper.addMapping(ui->writeTagTagComboBox, RunnersTableModel::tag_col, "items");
     m_tagWriterDataWidgetMapper.addMapping(ui->writeTagNumberLabel, RunnersTableModel::number_col, "text");
 
     m_attachTagSortFilterProxyModel.setSourceModel(&m_runnersTableModel);
@@ -79,7 +82,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_racetimingInterface_racesUpdated()
+void MainWindow::racetimingInterface_racesUpdated()
 {
     m_racesTableModel.setData(m_races);
 }
@@ -88,21 +91,30 @@ void MainWindow::updateWriteTagsLabels()
 {
     ui->writeTagProgressBar->setMaximum(m_runners.size() - 1);
     ui->writeTagProgressBar->setValue(m_writeTagsIndex);
+    ui->writeTagTagComboBox->clear();
 }
 
-void MainWindow::runnerLapStart(const int runnerID)
+void MainWindow::runnerLapStart(const int runnerIndex)
 {
-    m_racetimingInterface->sendEvent(m_runners[runnerID].numberid, Now(), RacetimingInterface::EventType::LapStart);
-    m_activeRunnersForm.runnerStart(m_runners[runnerID].name + " " + m_runners[runnerID].surname);
+    m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::LapStart);
+    m_activeRunnersForm.runnerStart(m_runners[runnerIndex].name + " " + m_runners[runnerIndex].surname);
+
+    ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
+    ui->eventsPlainTextEdit->insertPlainText(QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname) + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a start/lap event\n");
+    ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
 }
 
-void MainWindow::runnerFinished(int runnerID)
+void MainWindow::runnerFinished(int runnerIndex)
 {
-    m_racetimingInterface->sendEvent(m_runners[runnerID].numberid, Now(), RacetimingInterface::EventType::Finish);
-    m_activeRunnersForm.runnerFinish(m_runners[runnerID].name + " " + m_runners[runnerID].surname);
+    m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::Finish);
+    m_activeRunnersForm.runnerFinish(m_runners[runnerIndex].name + " " + m_runners[runnerIndex].surname);
+
+    ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
+    ui->eventsPlainTextEdit->insertPlainText(QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname) + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a finish event\n");
+    ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
 }
 
-void MainWindow::on_racetimingInterface_runnersUpdated()
+void MainWindow::racetimingInterface_runnersUpdated()
 {
     m_runnersTableModel.setData(m_runners);
     m_tagWriterDataWidgetMapper.toFirst();
@@ -135,13 +147,12 @@ void MainWindow::on_racetimingInterface_runnersUpdated()
 
 void MainWindow::on_raceConnectionsConnectButton_clicked()
 {
-    /*m_racetimingInterface = RacetimingInterface::CreateWebRacetimingInterface(
+    m_racetimingInterface = RacetimingInterface::CreateWebRacetimingInterface(
                 ui->endpointLineEdit->text().toStdString(),
-                ui->apiKeyLineEdit->text().toStdString()
-                ); */
-    m_racetimingInterface = RacetimingInterface::CreateTestRacetimingInterface();
-    m_racetimingInterface->setRacesTableUpdatedCallback([this](const auto& races) { m_races = races; on_racetimingInterface_racesUpdated(); });
-    m_racetimingInterface->setRunnersTableUpdatedCallback([this](const auto& runners) { m_runners = runners; on_racetimingInterface_runnersUpdated(); });
+                ui->apiKeyLineEdit->text().toStdString(),
+                [this](const auto& races) { m_races = races; racetimingInterface_racesUpdated(); },
+                [this](const auto& runners) { m_runners = runners; racetimingInterface_runnersUpdated(); }
+                );
 
     m_racetimingInterface->requestRaces();
 }
@@ -153,40 +164,11 @@ void MainWindow::on_getRunnersPushButton_clicked()
     ui->currentRaceLabel->setText("Current race: " + ui->availableRacesComboBox->currentText());
 }
 
-
-void MainWindow::on_customEventInsertPushButton_clicked()
-{
-    /*const int numberID = m_raceTimingInterface.GetRunnersTable().item(ui->customEventRunnerIDComboBox->currentIndex(), 5)->text().toInt();
-    m_racetimingInterface->sendEvent(
-                numberID,
-                ui->customEventNowCheckBox->isChecked() ? QDateTime::currentDateTime() : ui->customEventTimestampDateTimeEdit->dateTime(),
-                ui->customEventEventTypeComboBox->currentText() == "Start/lap" ? RaceTiming::EventType::LapStart : RaceTiming::EventType::Finish);
-                */
-}
-
-void MainWindow::on_customEventTriggerPushButton_clicked()
-{
-    /*
-    int column = 5;
-    const auto tidString = ui->customEventTIDComboBox->currentText();
-    const auto tids = m_raceTimingInterface.GetRunnersTable().findItems(tidString, Qt::MatchFixedString, column);
-    if (!tids.empty()) {
-        const auto tid = tids[0];
-        const auto numberID = m_raceTimingInterface.GetRunnersTable().item(tid->row(), 2)->text().toInt();
-
-        m_raceTimingInterface.sendEvent(
-                    numberID,
-                    ui->customEventNowCheckBox->isChecked() ? QDateTime::currentDateTime() : ui->customEventTimestampDateTimeEdit->dateTime(),
-                    ui->customEventEventTypeComboBox->currentText() == "Start/lap" ? RaceTiming::EventType::LapStart : RaceTiming::EventType::Finish);
-    }
-    */
-}
-
 void MainWindow::on_connectRFID1ConnectPushButton_clicked()
 {
     if (!m_tagReaders[0]) {
         m_tagReaders[0] = TagReaders::CreateM6EReader(ui->connectRFID1ConnectionComboBox->getPort().toStdString());
-        m_tagReaders[0]->setTagDetectedCallback([this](const auto& epc) { tagDetected(0, epc); });
+        m_tagReaders[0]->setTagDetectedCallback([this](const auto& tag) { tagDetected(0, tag); });
         m_tagReaders[0]->setConnectedCallback([this] {
             ui->connectRFID1StatusLabel->setText("Connected");
             ui->connectRFID1StatusLabel->setStyleSheet("color:green");});
@@ -205,7 +187,7 @@ void MainWindow::on_connectRFID2ConnectPushButton_clicked()
 {
     if (!m_tagReaders[1]) {
         m_tagReaders[1] = TagReaders::CreateM6EReader(ui->connectRFID2ConnectionComboBox->getPort().toStdString());
-        m_tagReaders[1]->setTagDetectedCallback([this](const auto& epc) { tagDetected(0, epc); });
+        m_tagReaders[1]->setTagDetectedCallback([this](const auto& tag) { tagDetected(0, tag); });
         m_tagReaders[1]->setConnectedCallback([this] {
             ui->connectRFID2StatusLabel->setText("Connected");
             ui->connectRFID2StatusLabel->setStyleSheet("color:green");});
@@ -224,13 +206,17 @@ void MainWindow::tagDetected(int readerIndex, const std::string_view tag)
 {
     ui->writeTagCurrentTagLabel->setText(QString::fromStdString(static_cast<const std::string>(tag)));
 
-    if (!m_raceStarted)
-        return;
-
     const auto runner = std::find_if(m_runners.cbegin(), m_runners.cend(), [&tag](const auto& runner) {
         return std::find(runner.tags.cbegin(), runner.tags.cend(), tag) != runner.tags.cend();
     });
+
     if (runner != m_runners.cend()) {
+        const auto runnerIndex = std::distance(m_runners.cbegin(), runner);
+        m_runnersTableModel.setSelectedRowIndex(runnerIndex);
+
+        // Do not put event if race has not started
+        if (!m_raceStarted)
+            return;
 
         RacetimingInterface::EventType event;
         if (readerIndex == 0) {
@@ -241,15 +227,10 @@ void MainWindow::tagDetected(int readerIndex, const std::string_view tag)
             return;
         }
 
-        ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
-        ui->eventsPlainTextEdit->insertPlainText(QString::fromStdString(runner->name) + " " + QString::fromStdString(runner->surname) + " - number id " + QString::number(runner->numberid) + " recorded " + (event == RacetimingInterface::EventType::LapStart ? "Start/Lap" : "Finish") + " event\n");
-        ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
-
-        m_racetimingInterface->sendEvent(
-                    runner->numberid,
-                    Now(),
-                    event
-                    );
+        if (event == RacetimingInterface::EventType::LapStart)
+            runnerLapStart(runnerIndex);
+        else
+            runnerFinished(runnerIndex);
     }
 }
 
@@ -259,24 +240,39 @@ void MainWindow::on_writeTagPreviousPushButton_clicked()
     updateWriteTagsLabels();
 }
 
-
 void MainWindow::on_writeTagNextPushButton_clicked()
 {
     m_tagWriterDataWidgetMapper.toNext();
     updateWriteTagsLabels();
 }
 
-
 void MainWindow::on_writeTagWritePushButton_clicked()
 {
-//    m_tagReaders[0]->writeEPC(ui->writeTagEPCLabel->text().toStdString());
-    on_writeTagNextPushButton_clicked();
+    m_tagReaders[0]->writeTag(ui->writeTagTagComboBox->currentText().toStdString());
 }
-
 
 void MainWindow::on_startRacePushButton_toggled(const bool checked)
 {
     m_raceStarted = checked;
     ui->startRacePushButton->setText(checked ? "Pause race" : "Start race");
+}
+
+void MainWindow::on_connectTestPushButton_clicked()
+{
+    m_racetimingInterface = RacetimingInterface::CreateTestRacetimingInterface(
+        [this](const auto& races) { m_races = races; racetimingInterface_racesUpdated(); },
+        [this](const auto& runners) { m_runners = runners; racetimingInterface_runnersUpdated(); }
+        );
+    m_racetimingInterface->requestRaces();
+}
+
+void MainWindow::on_connectLocalPushButton_clicked()
+{
+    m_racetimingInterface = RacetimingInterface::CreateLocalRacetimingInterface(
+        ui->connectLocalFilePathLineEdit->text().toStdString(),
+        [this](const auto& races) { m_races = races; racetimingInterface_racesUpdated(); },
+        [this](const auto& runners) { m_runners = runners; racetimingInterface_runnersUpdated(); }
+        );
+    m_racetimingInterface->requestRaces();
 }
 

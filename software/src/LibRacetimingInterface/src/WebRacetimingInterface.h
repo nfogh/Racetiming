@@ -9,7 +9,12 @@ namespace RacetimingInterface {
     class WebRacetimingInterface : public IRacetimingInterface, public QObject
     {
     public:
-        WebRacetimingInterface(const std::string_view endpoint, const std::string_view apiKey);
+        WebRacetimingInterface(
+            const std::string_view endpoint,
+            const std::string_view apiKey,
+            const RacesTableUpdatedCallback& racesTableUpdatedCallback,
+            const RunnersTableUpdatedCallback& runnersTableUpdatedCallback
+        );
 
         void setRacesTableUpdatedCallback(const RacesTableUpdatedCallback& callback) override { m_racesTableUpdatedCallback = callback; }
         void setRunnersTableUpdatedCallback(const RunnersTableUpdatedCallback& callback) override { m_runnersTableUpdatedCallback = callback; }

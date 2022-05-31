@@ -1,7 +1,13 @@
 #include "LocalRacetimingInterface.h"
 
 namespace RacetimingInterface {
-    LocalRacetimingInterface::LocalRacetimingInterface(const std::filesystem::path& path) : m_path(path)
+    LocalRacetimingInterface::LocalRacetimingInterface(
+        const std::filesystem::path& path,
+        const RacesTableUpdatedCallback& racesTableUpdatedCallback,
+        const RunnersTableUpdatedCallback& runnersTableUpdatedCallback) :
+        m_path(path),
+        m_racesTableUpdatedCallback(racesTableUpdatedCallback),
+        m_runnersTableUpdatedCallback(runnersTableUpdatedCallback)
     {
     }
 

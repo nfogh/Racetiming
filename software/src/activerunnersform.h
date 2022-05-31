@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <chrono>
+#include <optional>
 #include <QLabel>
 
 namespace Ui {
@@ -21,17 +22,15 @@ public:
     void runnerFinish(const std::string& name);
 
 private slots:
-    void on_timer_timeout();
+    void timer_timeout();
 
 private:
-    Ui::ActiveRunnersForm *ui;
-
     void updateUI();
 
     struct ActiveRunner {
         std::string name;
         std::chrono::steady_clock::time_point start;
-        std::chrono::steady_clock::time_point stop;
+        std::optional<std::chrono::steady_clock::time_point> stop;
 
         QLabel* nameLabel;
         QLabel* timeLabel;

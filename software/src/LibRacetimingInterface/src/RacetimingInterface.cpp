@@ -4,18 +4,30 @@
 #include "TestRacetimingInterface.h"
 
 namespace RacetimingInterface {
-std::unique_ptr<IRacetimingInterface> CreateWebRacetimingInterface(const std::string_view endpoint, const std::string_view apiKey)
+std::unique_ptr<IRacetimingInterface> CreateWebRacetimingInterface(
+    const std::string_view endpoint,
+    const std::string_view apiKey,
+    const IRacetimingInterface::RacesTableUpdatedCallback& racesTableUpdatedCallback,
+    const IRacetimingInterface::RunnersTableUpdatedCallback& runnersTableUpdatedCallback
+    )
 {
-    return std::make_unique<WebRacetimingInterface>(endpoint, apiKey);
+    return std::make_unique<WebRacetimingInterface>(endpoint, apiKey, racesTableUpdatedCallback, runnersTableUpdatedCallback);
 }
 
-std::unique_ptr<IRacetimingInterface> CreateLocalRacetimingInterface(const std::filesystem::path& filePath)
+std::unique_ptr<IRacetimingInterface> CreateLocalRacetimingInterface(
+    const std::filesystem::path& filePath,
+    const IRacetimingInterface::RacesTableUpdatedCallback& racesTableUpdatedCallback,
+    const IRacetimingInterface::RunnersTableUpdatedCallback& runnersTableUpdatedCallback
+    )
 {
-    return std::make_unique<LocalRacetimingInterface>(filePath);
+    return std::make_unique<LocalRacetimingInterface>(filePath, racesTableUpdatedCallback, runnersTableUpdatedCallback);
 }
 
-std::unique_ptr<IRacetimingInterface> CreateTestRacetimingInterface()
+std::unique_ptr<IRacetimingInterface> CreateTestRacetimingInterface(
+    const IRacetimingInterface::RacesTableUpdatedCallback& racesTableUpdatedCallback,
+    const IRacetimingInterface::RunnersTableUpdatedCallback& runnersTableUpdatedCallback
+    )
 {
-    return std::make_unique<TestRacetimingInterface>();
+    return std::make_unique<TestRacetimingInterface>(racesTableUpdatedCallback, runnersTableUpdatedCallback);
 }
 }
