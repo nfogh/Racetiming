@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: May 09, 2022 at 04:05 PM
+-- Generation Time: Jun 01, 2022 at 07:34 PM
 -- Server version: 8.0.29
 -- PHP Version: 8.0.15
 
@@ -41,12 +41,11 @@ CREATE TABLE `admins` (
 --
 
 CREATE TABLE `events` (
-  `raceid` int NOT NULL,
-  `runnerid` int NOT NULL,
+  `id` bigint NOT NULL,
   `timestamp` timestamp NOT NULL,
   `msecs` int NOT NULL,
   `event` int NOT NULL,
-  `id` bigint NOT NULL
+  `numberid` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -56,12 +55,13 @@ CREATE TABLE `events` (
 --
 
 CREATE TABLE `numbers` (
+  `id` int NOT NULL,
   `raceid` int NOT NULL,
   `runnerid` int NOT NULL,
   `number` int NOT NULL,
-  `id` int NOT NULL,
   `expected_laps` int DEFAULT '1',
-  `expected_time` int DEFAULT NULL
+  `expected_time` int DEFAULT NULL,
+  `teamid` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -89,7 +89,8 @@ CREATE TABLE `races` (
   `start` datetime DEFAULT NULL,
   `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `gpscoords` point DEFAULT NULL,
-  `finish` datetime DEFAULT NULL
+  `finish` datetime DEFAULT NULL,
+  `lap_length` float DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -99,20 +100,9 @@ CREATE TABLE `races` (
 --
 
 CREATE TABLE `rest_api_keys` (
+  `id` int NOT NULL,
   `adminid` int NOT NULL,
-  `api_key` varchar(128) NOT NULL,
-  `id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `rfidtags`
---
-
-CREATE TABLE `rfidtags` (
-  `runnerid` int NOT NULL,
-  `tid` binary(20) NOT NULL
+  `api_key` varchar(128) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -125,6 +115,30 @@ CREATE TABLE `runners` (
   `id` int NOT NULL,
   `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `surname` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tags`
+--
+
+CREATE TABLE `tags` (
+  `id` int NOT NULL,
+  `numberid` int NOT NULL,
+  `tid` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `teams`
+--
+
+CREATE TABLE `teams` (
+  `id` int NOT NULL,
+  `name` text NOT NULL,
+  `raceid` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -148,7 +162,9 @@ ALTER TABLE `events`
 -- Indexes for table `numbers`
 --
 ALTER TABLE `numbers`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniquerunner` (`raceid`,`runnerid`),
+  ADD UNIQUE KEY `uniquenumbers` (`number`,`raceid`);
 
 --
 -- Indexes for table `permissions`
@@ -169,15 +185,22 @@ ALTER TABLE `rest_api_keys`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `rfidtags`
---
-ALTER TABLE `rfidtags`
-  ADD PRIMARY KEY (`tid`);
-
---
 -- Indexes for table `runners`
 --
 ALTER TABLE `runners`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `tags`
+--
+ALTER TABLE `tags`
+  ADD PRIMARY KEY (`id`) USING BTREE,
+  ADD UNIQUE KEY `uniquetid` (`numberid`,`tid`);
+
+--
+-- Indexes for table `teams`
+--
+ALTER TABLE `teams`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -224,6 +247,12 @@ ALTER TABLE `rest_api_keys`
 -- AUTO_INCREMENT for table `runners`
 --
 ALTER TABLE `runners`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tags`
+--
+ALTER TABLE `tags`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 COMMIT;
 
