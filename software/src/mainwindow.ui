@@ -31,7 +31,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -385,42 +385,10 @@
            <string>Enter custom event</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="1" column="4">
-            <widget class="QComboBox" name="customEventEventTypeComboBox">
-             <item>
-              <property name="text">
-               <string>Start/lap</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Finish</string>
-              </property>
-             </item>
-            </widget>
+           <item row="1" column="0" colspan="4">
+            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
            </item>
-           <item row="3" column="5">
-            <widget class="QPushButton" name="customEventTriggerPushButton">
-             <property name="text">
-              <string>Trigger</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="4">
-            <widget class="QLabel" name="label_12">
-             <property name="text">
-              <string>Event Type</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="5">
-            <widget class="QPushButton" name="customEventInsertPushButton">
-             <property name="text">
-              <string>Insert</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="4">
+           <item row="2" column="2">
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -433,63 +401,25 @@
              </property>
             </spacer>
            </item>
-           <item row="2" column="0">
+           <item row="0" column="0">
             <widget class="QLabel" name="label_8">
              <property name="text">
-              <string>TID</string>
+              <string>Minimum time between registering events:</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="3">
-            <widget class="QCheckBox" name="customEventNowCheckBox">
-             <property name="text">
-              <string>Now</string>
+           <item row="0" column="1">
+            <widget class="QSpinBox" name="minimumTimeBetweenEventsSpinBox">
+             <property name="suffix">
+              <string> sec</string>
+             </property>
+             <property name="maximum">
+              <number>600</number>
+             </property>
+             <property name="value">
+              <number>30</number>
              </property>
             </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QComboBox" name="customEventTIDComboBox">
-             <property name="modelColumn">
-              <number>5</number>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QComboBox" name="customEventRunnerIDComboBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="modelColumn">
-              <number>1</number>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QDateTimeEdit" name="customEventTimestampDateTimeEdit">
-             <property name="displayFormat">
-              <string>yyyy-MM-dd HH:mm:ss.zzz</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>Runner</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_10">
-             <property name="text">
-              <string>Timestamp</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0" colspan="6">
-            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
            </item>
           </layout>
          </widget>

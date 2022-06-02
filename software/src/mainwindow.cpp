@@ -49,11 +49,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tableView->setSortingEnabled(true);
     ui->tableView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
-    ui->customEventRunnerIDComboBox->setModel(&m_runnersTableModel);
-    ui->customEventRunnerIDComboBox->setView(new QTableView());
-    ui->customEventTIDComboBox->setModel(&m_runnersTableModel);
-    ui->customEventTIDComboBox->setView(new QTableView());
-
     m_tagWriterDataWidgetMapper.setModel(&m_runnersTableModel);
     m_tagWriterDataWidgetMapper.addMapping(ui->writeTagNameLabel, RunnersTableModel::name_col, "text");
     ui->writeTagTagComboBox->setModel(&m_runnersTableModel);
@@ -94,24 +89,58 @@ void MainWindow::updateWriteTagsLabels()
     ui->writeTagTagComboBox->clear();
 }
 
-void MainWindow::runnerLapStart(const int runnerIndex)
+void MainWindow::appendToEvents(const QString& str)
 {
-    m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::LapStart);
-    m_activeRunnersForm.runnerStart(m_runners[runnerIndex].name + " " + m_runners[runnerIndex].surname);
-
+    auto cursor = ui->eventsPlainTextEdit->textCursor();
     ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
-    ui->eventsPlainTextEdit->insertPlainText(QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname) + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a start/lap event\n");
-    ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
+    ui->eventsPlainTextEdit->insertPlainText(str);
+    ui->eventsPlainTextEdit->setTextCursor(cursor);
+    ui->statusbar->showMessage(str, 10000);
 }
 
-void MainWindow::runnerFinished(int runnerIndex)
+void MainWindow::runnerLapStart(const int runnerIndex)
 {
+    const auto runnerName = QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname);
+    if (m_runnerFinished.count(runnerIndex) > 0) {
+        appendToEvents(runnerName + " registered a start/lap, but is already finished.. Ignoring.\n");
+        return; // Do not lap or start if runner has finished
+    }
+
+    if (m_latestEvent.count(runnerIndex) > 0) {
+        const auto secsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - m_latestEvent.at(runnerIndex));
+        if (secsElapsed < std::chrono::seconds(ui->minimumTimeBetweenEventsSpinBox->value())) {
+            appendToEvents(runnerName + " had an event too quickly (" + QString::number(secsElapsed.count()) + "s) after the other.. Ignoring.\n");
+            return; // Event happened too quick after the latest
+        }
+    }
+
+    m_latestEvent[runnerIndex] = std::chrono::steady_clock::now();
+
+    m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::LapStart);
+    m_activeRunnersForm.runnerStart(m_runners[runnerIndex].name + " " + m_runners[runnerIndex].surname);
+    appendToEvents(runnerName + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a start/lap event\n");
+}
+
+void MainWindow::runnerFinished(const int runnerIndex)
+{
+    const auto runnerName = QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname);
+    if (m_latestEvent.count(runnerIndex) > 0) {
+        const auto secsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - m_latestEvent.at(runnerIndex));
+        if (secsElapsed < std::chrono::seconds(ui->minimumTimeBetweenEventsSpinBox->value())) {
+            appendToEvents(runnerName + " had an event too quickly (" + QString::number(secsElapsed.count()) + "s) after the other.. Ignoring.\n");
+            return; // Event happened too quick after the latest
+        }
+    } else {
+        appendToEvents(runnerName + " registered a finish event, but has not yet started.. Ignored.\n");
+        return; // Event happened too quick after the latest
+    }
+    m_runnerFinished[runnerIndex] = true;
+    m_latestEvent[runnerIndex] = std::chrono::steady_clock::now();
+
     m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::Finish);
     m_activeRunnersForm.runnerFinish(m_runners[runnerIndex].name + " " + m_runners[runnerIndex].surname);
 
-    ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
-    ui->eventsPlainTextEdit->insertPlainText(QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname) + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a finish event\n");
-    ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
+    appendToEvents(runnerName + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a finish event\n");
 }
 
 void MainWindow::racetimingInterface_runnersUpdated()

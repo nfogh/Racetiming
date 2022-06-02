@@ -75,7 +75,17 @@ private:
     ActiveRunnersForm m_activeRunnersForm;
     QDataWidgetMapper m_tagWriterDataWidgetMapper;
 
+    //@brief List of runner IDs that have finished running
+    // When a runner has finished running, no more events should be registered.
+    std::unordered_map<int, bool> m_runnerFinished;
+
+    //@brief Used to limit event frequency.
+    // If a runner has been detected within some time, skip the detection.
+    // Also, a runner cannot finish he/she has not started.
+    std::unordered_map<int, std::chrono::steady_clock::time_point> m_latestEvent;
+
     int m_writeTagsIndex = 0;
 
     bool m_raceStarted = false;
+    void appendToEvents(const QString &str);
 };
