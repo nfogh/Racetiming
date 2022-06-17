@@ -1,5 +1,4 @@
-#ifndef QSERIALPORTCOMBOBOX_H
-#define QSERIALPORTCOMBOBOX_H
+#pragma once
 
 #include <QComboBox>
 
@@ -16,5 +15,3 @@ signals:
 public slots:
 
 };
-
-#endif // QSERIALPORTCOMBOBOX_H

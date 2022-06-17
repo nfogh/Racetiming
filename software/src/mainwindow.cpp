@@ -4,169 +4,304 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QListView>
 #include <QMessageBox>
+#include <TagReaders/TagReaders.h>
+#include <RacetimingInterface/RacetimingInterface.h>
+#include <time.h>
+#include <QSettings>
+#include "PushButtonDelegate.h"
+
+struct tm Now()
+{
+    const auto t = std::time(0);
+    struct tm time;
+#ifdef WIN32
+    ::localtime_s(&time, &t);
+#else
+    ::localtime_r(&t, &time);
+#endif
+    return time;
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->runnersTableView->setModel(&m_raceTimingInterface.GetRacesTable());
-    ui->availableRacesComboBox->setModel(&m_raceTimingInterface.GetRacesTable());
+    m_activeRunnersForm.show();
+
+    m_raceProgressSortFilterProxyModel.setSourceModel(&m_runnersTableModel);
+    m_raceProgressSortFilterProxyModel.setAcceptedColumns({RunnersTableModel::number_col, RunnersTableModel::name_col, RunnersTableModel::surname_col, RunnersTableModel::lapButton_col, RunnersTableModel::finishButton_col});
+    ui->runnersTableView->setModel(&m_raceProgressSortFilterProxyModel);
+    ui->runnersTableView->setAlternatingRowColors(true);
+    ui->runnersTableView->setSortingEnabled(true);
+    ui->runnersTableView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
+
+    m_racesSortFilterProxyModel.setSourceModel(&m_racesTableModel);
+    m_racesSortFilterProxyModel.setAcceptedColumns({RacesTableModel::id_col, RacesTableModel::name_col});
+    ui->availableRacesComboBox->setModel(&m_racesSortFilterProxyModel);
     ui->availableRacesComboBox->setView(new QTableView());
-    ui->tableView->setModel(&m_raceTimingInterface.GetRunnersTable());
-    ui->customEventRunnerIDComboBox->setModel(&m_raceTimingInterface.GetRunnersTable());
-    ui->customEventRunnerIDComboBox->setView(new QTableView());
-    ui->customEventTIDComboBox->setModel(&m_raceTimingInterface.GetRunnersTable());
-    ui->customEventTIDComboBox->setView(new QTableView());
 
-    connect(&m_raceTimingInterface, &RaceTiming::RaceTimingInterface::gotRaces, this, &MainWindow::on_raceTimingInterface_gotRaces);
-    connect(&m_raceTimingInterface, &RaceTiming::RaceTimingInterface::gotRunners, this, &MainWindow::on_raceTimingInterface_gotRunners);
+    m_numberSummarySortFilterProxyModel.setSourceModel(&m_runnersTableModel);
+    m_numberSummarySortFilterProxyModel.setAcceptedColumns({RunnersTableModel::number_col, RunnersTableModel::name_col, RunnersTableModel::surname_col});
 
-    m_rfidDevices.emplace_back(std::make_shared<QSerialPort>());
-    m_rfidDevices.emplace_back(std::make_shared<QSerialPort>());
-    m_rfidReaders.emplace_back(std::make_shared<M6ERFIDReader>(m_rfidDevices[0].get()));
-    m_rfidReaders.emplace_back(std::make_shared<M6ERFIDReader>(m_rfidDevices[1].get()));
+    ui->tableView->setModel(&m_numberSummarySortFilterProxyModel);
+    ui->tableView->setAlternatingRowColors(true);
+    ui->tableView->setSortingEnabled(true);
+    ui->tableView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
-    connect(m_rfidReaders[0].get(), &M6ERFIDReader::rfidDetected, this, &MainWindow::on_RFID1Reader_rfidDetected);
-    connect(m_rfidReaders[1].get(), &M6ERFIDReader::rfidDetected, this, &MainWindow::on_RFID2Reader_rfidDetected);
+    m_tagWriterDataWidgetMapper.setModel(&m_runnersTableModel);
+    m_tagWriterDataWidgetMapper.addMapping(ui->writeTagNameLabel, RunnersTableModel::name_col, "text");
+    ui->writeTagTagComboBox->setModel(&m_runnersTableModel);
+    ui->writeTagTagComboBox->setModelColumn(RunnersTableModel::tag_col);
+
+    //m_tagWriterDataWidgetMapper.addMapping(ui->writeTagTagComboBox, RunnersTableModel::tag_col, "items");
+    m_tagWriterDataWidgetMapper.addMapping(ui->writeTagNumberLabel, RunnersTableModel::number_col, "text");
+
+    m_attachTagSortFilterProxyModel.setSourceModel(&m_runnersTableModel);
+    m_attachTagSortFilterProxyModel.setAcceptedColumns({RunnersTableModel::number_col, RunnersTableModel::name_col, RunnersTableModel::surname_col, RunnersTableModel::tag_col, RunnersTableModel::attachTag_col});
+    ui->writeTagsTableView->setModel(&m_attachTagSortFilterProxyModel);
+    ui->writeTagsTableView->setAlternatingRowColors(true);
+    ui->writeTagsTableView->setSortingEnabled(true);
+    ui->writeTagsTableView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
+
+    QSettings settings;
+    ui->apiKeyLineEdit->setText(settings.value("state/apikey", "Please enter the API key to your web service").toString());
+    ui->endpointLineEdit->setText(settings.value("state/endpoint", "http://openracetiming.net").toString());
 }
 
 MainWindow::~MainWindow()
 {
+    QSettings settings;
+    settings.setValue("state/apikey", ui->apiKeyLineEdit->text());
+    settings.setValue("state/endpoint", ui->endpointLineEdit->text());
     delete ui;
 }
 
-void MainWindow::on_raceTimingInterface_gotRaces()
+void MainWindow::racetimingInterface_racesUpdated()
 {
+    m_racesTableModel.setData(m_races);
 }
 
-void MainWindow::on_raceTimingInterface_gotRunners()
+void MainWindow::updateWriteTagsLabels()
 {
+    ui->writeTagProgressBar->setMaximum(m_runners.size() - 1);
+    ui->writeTagProgressBar->setValue(m_writeTagsIndex);
+    ui->writeTagTagComboBox->clear();
+}
+
+void MainWindow::appendToEvents(const QString& str)
+{
+    auto cursor = ui->eventsPlainTextEdit->textCursor();
+    ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
+    ui->eventsPlainTextEdit->insertPlainText(str);
+    ui->eventsPlainTextEdit->setTextCursor(cursor);
+    ui->statusbar->showMessage(str, 10000);
+}
+
+void MainWindow::runnerLapStart(const int runnerIndex)
+{
+    const auto runnerName = QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname);
+    if (m_runnerFinished.count(runnerIndex) > 0) {
+        appendToEvents(runnerName + " registered a start/lap, but is already finished.. Ignoring.\n");
+        return; // Do not lap or start if runner has finished
+    }
+
+    if (m_latestEvent.count(runnerIndex) > 0) {
+        const auto secsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - m_latestEvent.at(runnerIndex));
+        if (secsElapsed < std::chrono::seconds(ui->minimumTimeBetweenEventsSpinBox->value())) {
+            appendToEvents(runnerName + " had an event too quickly (" + QString::number(secsElapsed.count()) + "s) after the other.. Ignoring.\n");
+            return; // Event happened too quick after the latest
+        }
+    }
+
+    m_latestEvent[runnerIndex] = std::chrono::steady_clock::now();
+
+    m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::LapStart);
+    m_activeRunnersForm.runnerStart(m_runners[runnerIndex].name + " " + m_runners[runnerIndex].surname);
+    appendToEvents(runnerName + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a start/lap event\n");
+}
+
+void MainWindow::runnerFinished(const int runnerIndex)
+{
+    const auto runnerName = QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname);
+    if (m_latestEvent.count(runnerIndex) > 0) {
+        const auto secsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - m_latestEvent.at(runnerIndex));
+        if (secsElapsed < std::chrono::seconds(ui->minimumTimeBetweenEventsSpinBox->value())) {
+            appendToEvents(runnerName + " had an event too quickly (" + QString::number(secsElapsed.count()) + "s) after the other.. Ignoring.\n");
+            return; // Event happened too quick after the latest
+        }
+    } else {
+        appendToEvents(runnerName + " registered a finish event, but has not yet started.. Ignored.\n");
+        return; // Event happened too quick after the latest
+    }
+    m_runnerFinished[runnerIndex] = true;
+    m_latestEvent[runnerIndex] = std::chrono::steady_clock::now();
+
+    m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::Finish);
+    m_activeRunnersForm.runnerFinish(m_runners[runnerIndex].name + " " + m_runners[runnerIndex].surname);
+
+    appendToEvents(runnerName + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a finish event\n");
+}
+
+void MainWindow::racetimingInterface_runnersUpdated()
+{
+    m_runnersTableModel.setData(m_runners);
+    m_tagWriterDataWidgetMapper.toFirst();
+    m_writeTagsIndex = 0;
+    updateWriteTagsLabels();
+    for (int row = 0; row < m_runnersTableModel.rowCount(); row++) {
+        const auto lapButton = new QPushButton("Lap");
+        connect(lapButton, &QPushButton::clicked, this, [this, row](){
+            qDebug() << "Lap pushed for " << row;
+            runnerLapStart(row);
+        });
+        ui->runnersTableView->setIndexWidget(m_raceProgressSortFilterProxyModel.index(row, 3), lapButton);
+
+        const auto finishButton = new QPushButton("Finish");
+        connect(finishButton, &QPushButton::clicked, this, [this, row](){
+            qDebug() << "Finished pushed for " << row;
+            runnerFinished(row);
+        });
+        ui->runnersTableView->setIndexWidget(m_raceProgressSortFilterProxyModel.index(row, 4), finishButton);
+
+        const auto attachTagButton = new QPushButton("Attach");
+        connect(attachTagButton, &QPushButton::clicked, this, [this, row](){
+            qDebug() << "Attaching tag for " << m_runners[row].numberid;
+            m_racetimingInterface->attachTag(m_runners[row].numberid, ui->writeTagCurrentTagLabel->text().toStdString());
+            m_racetimingInterface->requestRunners(m_races[ui->availableRacesComboBox->currentIndex()].id);
+        });
+        ui->writeTagsTableView->setIndexWidget(m_attachTagSortFilterProxyModel.index(row, 4), attachTagButton);
+    }
 }
 
 void MainWindow::on_raceConnectionsConnectButton_clicked()
 {
-    m_raceTimingInterface.setApiKey(ui->apiKeyLineEdit->text());
-    m_raceTimingInterface.setUrl(ui->websiteLineEdit->text());
-    m_raceTimingInterface.getRaces();
-}
+    m_racetimingInterface = RacetimingInterface::CreateWebRacetimingInterface(
+                ui->endpointLineEdit->text().toStdString(),
+                ui->apiKeyLineEdit->text().toStdString(),
+                [this](const auto& races) { m_races = races; racetimingInterface_racesUpdated(); },
+                [this](const auto& runners) { m_runners = runners; racetimingInterface_runnersUpdated(); }
+                );
 
+    m_racetimingInterface->requestRaces();
+}
 
 void MainWindow::on_getRunnersPushButton_clicked()
 {
-    const auto id = m_raceTimingInterface.GetRacesTable().item(ui->availableRacesComboBox->currentIndex())->text().toInt();
-    m_raceTimingInterface.getRunners(id);
+    const auto raceID = m_races[ui->availableRacesComboBox->currentIndex()].id;
+    m_racetimingInterface->requestRunners(raceID);
     ui->currentRaceLabel->setText("Current race: " + ui->availableRacesComboBox->currentText());
 }
 
-
-void MainWindow::on_customEventInsertPushButton_clicked()
-{
-    const int numberID = m_raceTimingInterface.GetRunnersTable().item(ui->customEventRunnerIDComboBox->currentIndex(), 5)->text().toInt();
-    m_raceTimingInterface.sendEvent(
-                numberID,
-                ui->customEventNowCheckBox->isChecked() ? QDateTime::currentDateTime() : ui->customEventTimestampDateTimeEdit->dateTime(),
-                ui->customEventEventTypeComboBox->currentText() == "Start/lap" ? RaceTiming::EventType::LapStart : RaceTiming::EventType::Finish);
-}
-
-
-void MainWindow::on_customEventTriggerPushButton_clicked()
-{
-    int column = 5;
-    const auto tidString = ui->customEventTIDComboBox->currentText();
-    const auto tids = m_raceTimingInterface.GetRunnersTable().findItems(tidString, Qt::MatchFixedString, column);
-    if (!tids.empty()) {
-        const auto tid = tids[0];
-        const auto numberID = m_raceTimingInterface.GetRunnersTable().item(tid->row(), 2)->text().toInt();
-
-        m_raceTimingInterface.sendEvent(
-                    numberID,
-                    ui->customEventNowCheckBox->isChecked() ? QDateTime::currentDateTime() : ui->customEventTimestampDateTimeEdit->dateTime(),
-                    ui->customEventEventTypeComboBox->currentText() == "Start/lap" ? RaceTiming::EventType::LapStart : RaceTiming::EventType::Finish);
-    }
-}
-
-
 void MainWindow::on_connectRFID1ConnectPushButton_clicked()
 {
-    if (!m_rfidDevices[0]->isOpen()) {
-        m_rfidDevices[0]->setPortName(ui->connectRFID1ConnectionComboBox->getPort());
-        if (!m_rfidDevices[0]->open(QIODevice::ReadOnly)) {
-            QMessageBox::warning(this, "Warning", "Unable to open port " + ui->connectRFID1ConnectionComboBox->currentText() + ". " + m_rfidDevices[0]->errorString());
-            return;
-        }
-        m_rfidDevices[0]->setBaudRate(9600);
-        m_rfidDevices[0]->setParity(QSerialPort::NoParity);
-        m_rfidDevices[0]->setDataBits(QSerialPort::Data8);
-        m_rfidDevices[0]->setStopBits(QSerialPort::OneStop);
-        m_rfidDevices[0]->flush();
-        m_rfidReaders[0]->connect();
+    if (!m_tagReaders[0]) {
+        m_tagReaders[0] = TagReaders::CreateM6EReader(ui->connectRFID1ConnectionComboBox->getPort().toStdString());
+        m_tagReaders[0]->setTagDetectedCallback([this](const auto& tag) { tagDetected(0, tag); });
+        m_tagReaders[0]->setConnectedCallback([this] {
+            ui->connectRFID1StatusLabel->setText("Connected");
+            ui->connectRFID1StatusLabel->setStyleSheet("color:green");});
+        m_tagReaders[0]->setDisconnectedCallback([this]{
+            ui->connectRFID1StatusLabel->setText("Disconnected");
+            ui->connectRFID1StatusLabel->setStyleSheet("color : red");
+        });
         ui->connectRFID1ConnectPushButton->setText("Close");
     } else {
-        m_rfidReaders[0]->disconnect();
-        m_rfidDevices[0]->close();
+        m_tagReaders[0].reset();
         ui->connectRFID1ConnectPushButton->setText("Open");
     }
 }
 
 void MainWindow::on_connectRFID2ConnectPushButton_clicked()
 {
-    if (!m_rfidDevices[1]->isOpen()) {
-        m_rfidDevices[1]->setPortName(ui->connectRFID2ConnectionComboBox->getPort());
-        if (!m_rfidDevices[1]->open(QIODevice::ReadOnly)) {
-            QMessageBox::warning(this, "Warning", "Unable to open port " + ui->connectRFID2ConnectionComboBox->currentText() + ". " + m_rfidDevices[1]->errorString());
-            return;
-        }
-        m_rfidDevices[1]->setBaudRate(9600);
-        m_rfidDevices[1]->setParity(QSerialPort::NoParity);
-        m_rfidDevices[1]->setDataBits(QSerialPort::Data8);
-        m_rfidDevices[1]->setStopBits(QSerialPort::OneStop);
-        m_rfidDevices[1]->flush();
-        m_rfidReaders[1]->connect();
+    if (!m_tagReaders[1]) {
+        m_tagReaders[1] = TagReaders::CreateM6EReader(ui->connectRFID2ConnectionComboBox->getPort().toStdString());
+        m_tagReaders[1]->setTagDetectedCallback([this](const auto& tag) { tagDetected(0, tag); });
+        m_tagReaders[1]->setConnectedCallback([this] {
+            ui->connectRFID2StatusLabel->setText("Connected");
+            ui->connectRFID2StatusLabel->setStyleSheet("color:green");});
+        m_tagReaders[1]->setDisconnectedCallback([this]{
+            ui->connectRFID2StatusLabel->setText("Disconnected");
+            ui->connectRFID2StatusLabel->setStyleSheet("color : red");
+        });
         ui->connectRFID2ConnectPushButton->setText("Close");
     } else {
-        m_rfidReaders[1]->disconnect();
-        m_rfidDevices[1]->close();
+        m_tagReaders[1].reset();
         ui->connectRFID2ConnectPushButton->setText("Open");
     }
 }
 
-void MainWindow::on_RFID1Reader_rfidDetected(const QString& tid)
+void MainWindow::tagDetected(int readerIndex, const std::string_view tag)
 {
-    rfidDetected(0, tid);
-}
+    ui->writeTagCurrentTagLabel->setText(QString::fromStdString(static_cast<const std::string>(tag)));
 
-void MainWindow::on_RFID2Reader_rfidDetected(const QString& tid)
-{
-    rfidDetected(1, tid);
-}
+    const auto runner = std::find_if(m_runners.cbegin(), m_runners.cend(), [&tag](const auto& runner) {
+        return std::find(runner.tags.cbegin(), runner.tags.cend(), tag) != runner.tags.cend();
+    });
 
-void MainWindow::rfidDetected(int readerIndex, const QString &tid)
-{
-    int column = 5;
-    const auto tidString = tid;
-    const auto tids = m_raceTimingInterface.GetRunnersTable().findItems(tidString, Qt::MatchFixedString, column);
-    if (!tids.empty()) {
-        const auto tid = tids[0];
-        const auto numberID = m_raceTimingInterface.GetRunnersTable().item(tid->row(), 2)->text().toInt();
+    if (runner != m_runners.cend()) {
+        const auto runnerIndex = std::distance(m_runners.cbegin(), runner);
+        m_runnersTableModel.setSelectedRowIndex(runnerIndex);
 
-        RaceTiming::EventType event;
+        // Do not put event if race has not started
+        if (!m_raceStarted)
+            return;
+
+        RacetimingInterface::EventType event;
         if (readerIndex == 0) {
-            event = ui->connectRFID1FunctionComboBox->currentText() == "Start/Lap" ? RaceTiming::EventType::LapStart : RaceTiming::EventType::Finish;
+            event = ui->connectRFID1FunctionComboBox->currentText() == "Start/Lap" ? RacetimingInterface::EventType::LapStart : RacetimingInterface::EventType::Finish;
         } else if (readerIndex == 1){
-            event = ui->connectRFID2FunctionComboBox->currentText() == "Start/Lap" ? RaceTiming::EventType::LapStart : RaceTiming::EventType::Finish;
+            event = ui->connectRFID2FunctionComboBox->currentText() == "Start/Lap" ? RacetimingInterface::EventType::LapStart : RacetimingInterface::EventType::Finish;
         } else {
             return;
         }
 
-        ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
-        ui->eventsPlainTextEdit->insertPlainText("Number id " + QString::number(numberID) + " recorded " + (event == RaceTiming::EventType::LapStart ? "Start/Lap" : "Finish") + " event\n");
-        ui->eventsPlainTextEdit->moveCursor(QTextCursor::End);
-
-        m_raceTimingInterface.sendEvent(
-                    numberID,
-                    QDateTime::currentDateTime(),
-                    event
-                    );
+        if (event == RacetimingInterface::EventType::LapStart)
+            runnerLapStart(runnerIndex);
+        else
+            runnerFinished(runnerIndex);
     }
 }
+
+void MainWindow::on_writeTagPreviousPushButton_clicked()
+{
+    m_tagWriterDataWidgetMapper.toPrevious();
+    updateWriteTagsLabels();
+}
+
+void MainWindow::on_writeTagNextPushButton_clicked()
+{
+    m_tagWriterDataWidgetMapper.toNext();
+    updateWriteTagsLabels();
+}
+
+void MainWindow::on_writeTagWritePushButton_clicked()
+{
+    m_tagReaders[0]->writeTag(ui->writeTagTagComboBox->currentText().toStdString());
+}
+
+void MainWindow::on_startRacePushButton_toggled(const bool checked)
+{
+    m_raceStarted = checked;
+    ui->startRacePushButton->setText(checked ? "Pause race" : "Start race");
+}
+
+void MainWindow::on_connectTestPushButton_clicked()
+{
+    m_racetimingInterface = RacetimingInterface::CreateTestRacetimingInterface(
+        [this](const auto& races) { m_races = races; racetimingInterface_racesUpdated(); },
+        [this](const auto& runners) { m_runners = runners; racetimingInterface_runnersUpdated(); }
+        );
+    m_racetimingInterface->requestRaces();
+}
+
+void MainWindow::on_connectLocalPushButton_clicked()
+{
+    m_racetimingInterface = RacetimingInterface::CreateLocalRacetimingInterface(
+        ui->connectLocalFilePathLineEdit->text().toStdString(),
+        [this](const auto& races) { m_races = races; racetimingInterface_racesUpdated(); },
+        [this](const auto& runners) { m_runners = runners; racetimingInterface_runnersUpdated(); }
+        );
+    m_racetimingInterface->requestRaces();
+}
+

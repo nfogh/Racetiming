@@ -1,10 +1,17 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
+#include "RacesTableModel.h"
+#include "RunnersTableModel.h"
+#include "ColumnIndexSortFilterProxyModel.h"
+#include "activerunnersform.h"
+
+#include <QDataWidgetMapper>
 #include <QMainWindow>
-#include "racetiminginterface.h"
-#include "m6erfidreader.h"
-#include <QSerialPort>
+#include <RacetimingInterface/IRacetimingInterface.h>
+#include <TagReaders/ITagReader.h>
+#include <array>
+#include <memory>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,33 +26,66 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_raceTimingInterface_gotRaces();
-    void on_raceTimingInterface_gotRunners();
+    void racetimingInterface_racesUpdated();
+    void racetimingInterface_runnersUpdated();
 
     void on_raceConnectionsConnectButton_clicked();
 
     void on_getRunnersPushButton_clicked();
 
-    void on_customEventInsertPushButton_clicked();
-
-    void on_customEventTriggerPushButton_clicked();
-
     void on_connectRFID1ConnectPushButton_clicked();
 
     void on_connectRFID2ConnectPushButton_clicked();
 
-    void on_RFID1Reader_rfidDetected(const QString& tid);
-    void on_RFID2Reader_rfidDetected(const QString& tid);
+    void on_writeTagPreviousPushButton_clicked();
+
+    void on_writeTagNextPushButton_clicked();
+
+    void on_writeTagWritePushButton_clicked();
+
+    void on_startRacePushButton_toggled(bool checked);
+
+    void on_connectTestPushButton_clicked();
+
+    void on_connectLocalPushButton_clicked();
 
 private:
-    void rfidDetected(int readerIndex, const QString& tid);
+    void tagDetected(int readerIndex, std::string_view epc);
+    void updateWriteTagsLabels();
+
+    void runnerLapStart(int runnerID);
+    void runnerFinished(int runnerID);
 
     Ui::MainWindow *ui;
 
-    QVector<std::shared_ptr<M6ERFIDReader>> m_rfidReaders;
-    QVector<std::shared_ptr<QSerialPort>> m_rfidDevices;
+    std::array<std::unique_ptr<TagReaders::ITagReaderWriter>, 2> m_tagReaders;
 
-    RaceTiming::RaceTimingInterface m_raceTimingInterface;
+    std::unique_ptr<RacetimingInterface::IRacetimingInterface> m_racetimingInterface;
 
+    RacetimingInterface::RacesTable m_races;
+    RacetimingInterface::RunnersTable m_runners;
+    ColumnIndexSortFilterProxyModel m_numberSummarySortFilterProxyModel;
+    ColumnIndexSortFilterProxyModel m_raceProgressSortFilterProxyModel;
+    ColumnIndexSortFilterProxyModel m_racesSortFilterProxyModel;
+    ColumnIndexSortFilterProxyModel m_attachTagSortFilterProxyModel;
+
+    RacesTableModel m_racesTableModel;
+    RunnersTableModel m_runnersTableModel;
+
+    ActiveRunnersForm m_activeRunnersForm;
+    QDataWidgetMapper m_tagWriterDataWidgetMapper;
+
+    //@brief List of runner IDs that have finished running
+    // When a runner has finished running, no more events should be registered.
+    std::unordered_map<int, bool> m_runnerFinished;
+
+    //@brief Used to limit event frequency.
+    // If a runner has been detected within some time, skip the detection.
+    // Also, a runner cannot finish he/she has not started.
+    std::unordered_map<int, std::chrono::steady_clock::time_point> m_latestEvent;
+
+    int m_writeTagsIndex = 0;
+
+    bool m_raceStarted = false;
+    void appendToEvents(const QString &str);
 };
-#endif // MAINWINDOW_H
