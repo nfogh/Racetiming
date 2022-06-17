@@ -24,7 +24,7 @@ else {
     die("<h2>Unable to get numbers. " . $db->error . "</h2>");
 }
 
-$sql = "SELECT rfidtags.numberid FROM rfidtags JOIN numbers ON (rfidtags.numberid = numbers.id) WHERE numbers.raceid={$raceid}";
+$sql = "SELECT tags.numberid FROM tags JOIN numbers ON (tags.numberid = numbers.id) WHERE numbers.raceid={$raceid}";
 if ($res = $db->query($sql)) {
     $existingtags = array();
     while ($row = $res->fetch_assoc())
@@ -40,7 +40,7 @@ $missingnumbers = array_diff($numbers, $existingtags);
 
 if (count($missingnumbers) > 0) {
 
-$sql = "INSERT INTO rfidtags (numberid, tid) VALUES";
+$sql = "INSERT INTO tags (numberid, tid) VALUES";
 $first = True;
 foreach ($missingnumbers as $missingnumber) {
     if (!$first) {
@@ -49,7 +49,7 @@ foreach ($missingnumbers as $missingnumber) {
         $first = False;
     }
     
-    $sql = $sql . "({$missingnumber}, SUBSTR(MD5(RAND()), 1, 24))";
+    $sql = $sql . "({$missingnumber}, MD5(RAND()))";
 
 }
 
