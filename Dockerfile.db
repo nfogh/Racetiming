@@ -6,9 +6,10 @@ ENV MYSQL_DATABASE=racetiming \
 ADD data/initdb.sql /docker-entrypoint-initdb.d
 
 RUN echo "\n[mysqld]\n" \
-	 "innodb_buffer_pool_size = 32M\n" \
-	 "max_connections = 20\n" \
-	 "key_buffer_size = 8\n" \
+         "performance_schema = off\n" \
+	 "innodb_buffer_pool_size = 5M\n" \
+	 "max_connections = 10\n" \
+	 "key_buffer_size = 16M\n" \
 	 "thread_cache_size = 0\n" \
 	 "host_cache_size = 0\n" \
 	 "innodb_ft_cache_size = 1600000\n" \

@@ -6,7 +6,7 @@
                 <table>
                     <tr><td>Race</td><td>Number</td><td>Name</td><td>TID</td><td>Select</td></tr>
                     <?php
-                        if ($res = $db->query("SELECT rfidtags.numberid as numberid, rfidtags.tid as tid, rfidtags.id as id, numbers.number as number, numbers.raceid as raceid, numbers.runnerid as runnerid, runners.name as runnername, runners.surname as runnersurname, races.name as racename FROM rfidtags JOIN numbers ON (numbers.id = rfidtags.numberid) JOIN runners ON (runners.id = numbers.runnerid) JOIN races ON (races.id = numbers.raceid)")) {
+                        if ($res = $db->query("SELECT tags.numberid as numberid, tags.tid as tid, tags.id as id, numbers.number as number, numbers.raceid as raceid, numbers.runnerid as runnerid, runners.name as runnername, runners.surname as runnersurname, races.name as racename FROM tags JOIN numbers ON (numbers.id = tags.numberid) JOIN runners ON (runners.id = numbers.runnerid) JOIN races ON (races.id = numbers.raceid)")) {
                         
                             while ($row = $res->fetch_assoc()) {
                                 printf("<tr>");

@@ -14,7 +14,7 @@ $tid = mysqli_real_escape_string($db, htmlspecialchars($_POST["tid"]));
 
 $numberid = mysqli_real_escape_string($db, htmlspecialchars($_POST["numberid"]));
 
-$sql = "INSERT INTO rfidtags (tid, numberid) VALUES ('" . $tid . "'," . $numberid . ")";
+$sql = "INSERT INTO tags (tid, numberid) VALUES ('" . $tid . "'," . $numberid . ")";
 if (!$db->query($sql)) {
     printf("<h2>Unable to insert new tag. " . $db->error . "</h2> {$sql}.");
 }

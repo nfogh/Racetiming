@@ -165,10 +165,12 @@ void MainWindow::racetimingInterface_runnersUpdated()
         });
         ui->runnersTableView->setIndexWidget(m_raceProgressSortFilterProxyModel.index(row, 4), finishButton);
 
+        const auto sourceRow = m_attachTagSortFilterProxyModel.mapToSource(m_attachTagSortFilterProxyModel.index(row, 0)).row();
+
         const auto attachTagButton = new QPushButton("Attach");
-        connect(attachTagButton, &QPushButton::clicked, this, [this, row](){
-            qDebug() << "Attaching tag for " << m_runners[row].numberid;
-            m_racetimingInterface->attachTag(m_runners[row].numberid, ui->writeTagCurrentTagLabel->text().toStdString());
+        connect(attachTagButton, &QPushButton::clicked, this, [this, sourceRow](){
+            qDebug() << "Attaching tag for " << m_runners[sourceRow].numberid;
+            m_racetimingInterface->attachTag(m_runners[sourceRow].numberid, ui->writeTagCurrentTagLabel->text().toStdString());
             m_racetimingInterface->requestRunners(m_races[ui->availableRacesComboBox->currentIndex()].id);
         });
         ui->writeTagsTableView->setIndexWidget(m_attachTagSortFilterProxyModel.index(row, 4), attachTagButton);
