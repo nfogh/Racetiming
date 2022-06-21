@@ -385,10 +385,7 @@
            <string>Enter custom event</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="1" column="0" colspan="4">
-            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
-           </item>
-           <item row="2" column="2">
+           <item row="3" column="2">
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -400,6 +397,9 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item row="1" column="0" colspan="4">
+            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_8">
@@ -419,6 +419,31 @@
              <property name="value">
               <number>30</number>
              </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="4">
+            <widget class="QGroupBox" name="logEventsToFileGroupBox">
+             <property name="title">
+              <string>Log events to fie</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_9">
+              <item row="0" column="0">
+               <widget class="QLineEdit" name="logEventsToFilePathLineEdit"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="QToolButton" name="logEventsToFileBrowsePathToolButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
