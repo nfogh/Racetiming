@@ -27,7 +27,7 @@
                         printf("<p>{$start}</p>");
                         printf("<h2><a href='/listtimes.php?raceid={$id}'>{$name}</a></h2>");
                         printf("<p>{$description}</p>");
-printf("</div>");
+                        printf("</div>");
                     }
                 
                     $res->close();
@@ -40,11 +40,25 @@ printf("</div>");
         require '_footer.php';
         exit();
     }
- 
-    $raceid = htmlspecialchars($_GET['raceid']);
-    $raceid = mysqli_real_escape_string($db, $raceid);
 
-    if ($res = $db->query('SELECT name, description, address, start, finish, ST_X(gpscoords) as latitude, ST_Y(gpscoords) as longitude from races WHERE id=' . $raceid)) {
+    $raceid = $_GET['raceid'];
+
+    $stmt = $db->prepare("
+        SELECT
+            name,
+            description,
+            address,
+            start,
+            finish,
+            ST_X(gpscoords) as latitude,
+            ST_Y(gpscoords) as longitude,
+            lap_length
+        FROM
+            races
+        WHERE id=?");
+    $stmt->bind_param("i", $raceid);
+    if ($stmt->execute()) {
+        $res = $stmt->get_result();
         if ($row = $res->fetch_assoc()) {
             $name = $row["name"];
             $description = $row["description"];
@@ -53,6 +67,7 @@ printf("</div>");
             $finish = new DateTime($row["finish"]);
             $latitude = $row["latitude"];
             $longitude = $row["longitude"];
+            $lap_length = $row["lap_length"];
         } else {
             die("Unable to find race with the id {$raceid}");
         }
@@ -140,6 +155,10 @@ printf("</div>");
                 <div class="cell small-8"><?= $address ?></div>
                 <div class="cell small-4"><h5>GPS coordinates</h5></div>
                 <div class="cell small-8"><?= $latitude ?>, <?= $longitude ?></div>
+                <? if (!is_null($lap_length)) { ?>
+                <div class="cell small-4"><h5>Lap length</h5></div>
+                <div class="cell small-8"><?= $lap_length ?> Km</div>
+                <? } ?>
                 <div class="cell"><div id="map" style="width:100%; height:400px"></div></div>
             </div>
         </div>
