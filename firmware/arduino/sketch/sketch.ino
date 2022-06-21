@@ -21,6 +21,8 @@ RFID nano; //Create instance
 //#define BUZZER1 0 //For testing quietly
 #define BUZZER2 10
 
+int power = 2700;
+
 int buzzerTone = 0;
 unsigned long buzzerTimeout = 0;
 
@@ -133,8 +135,8 @@ void setup()
 
   nano.setRegion(REGION_EUROPE);
 
-  nano.setReadPower(2700);
-  nano.setWritePower(2700);
+  nano.setReadPower(power);
+  nano.setWritePower(power);
   
   pinMode(BUZZER1, OUTPUT);
   pinMode(BUZZER2, OUTPUT);
@@ -146,6 +148,9 @@ void setup()
   nano.startReading();
 
   pinMode(7, OUTPUT);
+
+  buzzerTone = 1;
+  buzzerTimeout = millis();
 }
 
 #define ARRAYSIZE(x) (sizeof(x)/sizeof(x[0]))
@@ -181,7 +186,7 @@ void loop()
   }
 
   if (Serial.available() > 0) {
-    const String s = Serial.readString();
+    String s = Serial.readString();
     if (s.startsWith("setid")) {
       String id = s.substring(6, 6+32);
       id.trim();
@@ -200,6 +205,17 @@ void loop()
     } else if (s.startsWith("start")) {
       Serial.println("Starting reading");
       nano.startReading();
+    } else if (s.startsWith("power")) {
+      s.remove(0,5);
+      power = s.toInt();
+      if (power > 2700)
+        power = 2700;
+      if (power < 0)
+        power = 0;
+      nano.setReadPower(power);
+      nano.setWritePower(power);
+      Serial.print("Power is ");
+      Serial.println(power);
     }
   }
   
