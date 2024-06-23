@@ -23,9 +23,9 @@
             JOIN numbers ON (events.numberid  = numbers.id) 
             JOIN runners ON (numbers.runnerid = runners.id)
             JOIN races   ON (numbers.raceid   = races.id)";
-    if ($res = $db->query($sql)) {
+    if ($res = $sqlite->query($sql)) {
     
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetchArray(SQLITE_ASSOC))
         {
             printf("<tr>");
             printf("<td>{$row['racename']}</td>");
@@ -36,9 +36,8 @@
             printf("</tr>");
         }
     
-        $res->close();
     } else {
-      printf("<div class='callout large event'>{$db->error}</div>");
+      printf("<div class='callout large event'>{$sqlite->lastErrorMsg()}</div>");
     }
 ?> 
 </table>

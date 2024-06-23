@@ -7,8 +7,8 @@
                 <table>
                     <tr><td>ID</td><td>Name</td><td>Surname</td><td>Select</td></tr>
                         <?php
-                            if ($res = $db->query("SELECT * FROM runners")) {
-                                while ($row = $res->fetch_assoc())
+                            if ($res = $sqlite->query("SELECT * FROM runners")) {
+                                while ($row = $res->fetchArray(SQLITE_ASSOC))
                                 {
                                     printf('<tr>');
                                     printf('<td>' . $row['id'] . '</td>');
@@ -17,8 +17,7 @@
                                     printf('<td><input type="checkbox" name="check[' . $row['id'] . ']"></td>');
                                     printf("</tr>");
                                 }
-                            
-                                $res->close();
+
                             }
                         ?> 
                 </table>

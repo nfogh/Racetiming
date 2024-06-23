@@ -8,10 +8,9 @@
                     <tr><td>
                         <select name="numberid">
                         <?php
-                            if ($res = $db->query("SELECT numbers.id as id, numbers.number as number, races.name as racename, runners.name as runnername, runners.surname as runnersurname FROM numbers JOIN races ON (numbers.raceid = races.id) JOIN runners ON (runners.id = numbers.runnerid)")) {
-                                while ($row = $res->fetch_assoc())
+                            if ($res = $sqlite->query("SELECT numbers.id as id, numbers.number as number, races.name as racename, runners.name as runnername, runners.surname as runnersurname FROM numbers JOIN races ON (numbers.raceid = races.id) JOIN runners ON (runners.id = numbers.runnerid)")) {
+                                while ($row = $res->fetchArray(SQLITE_ASSOC))
                                     printf("<option value='{$row['id']}'>{$row['racename']} [{$row['number']}] {$row['runnername']} {$row['runnersurname']}</option>");
-                                $res->close();
                             }
                         ?>
                         </select>

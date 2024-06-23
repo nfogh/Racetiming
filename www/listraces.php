@@ -6,8 +6,8 @@
             <table>
             <tr><td>ID</td><td>Name</td><td>Select</td></tr>
             <?php
-                if ($res = $db->query("SELECT id, name FROM races")) {
-                    while ($row = $res->fetch_assoc())
+                if ($res = $sqlite->query("SELECT id, name FROM races")) {
+                    while ($row = $res->fetchArray(SQLITE_ASSOC))
                     {
                         $id = $row['id'];
                         $name = $row['name'];
@@ -16,8 +16,7 @@
                         printf("<td><input type=checkbox name=check[{$id}]></td>");
                         printf("</tr>");
                     }
-                
-                    $res->close();
+
                 }
             ?> 
             </table>

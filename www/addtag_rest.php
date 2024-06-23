@@ -9,35 +9,36 @@ if (!isset($_POST['numberid']))
     exit("{ \"addtag\": \"error: Missing numberid parameter\" }");
 $numberid = $_POST["numberid"];
 
-$stmt = $db->prepare("
+$stmt = $sqlite->prepare("
     SELECT 
         numbers.id
     FROM numbers
     JOIN permissions ON (numbers.raceid = permissions.raceid)
     JOIN rest_api_keys ON (rest_api_keys.adminid = permissions.adminid) 
-    WHERE rest_api_keys.api_key=? AND numbers.id=?");
+    WHERE rest_api_keys.api_key=:apikey AND numbers.id=:numberid");
 print("apikey={$apikey}<br>");
 print("numberid={$numberid}<br>");
 
-$stmt->bind_param("si", $apikey, $numberid);
-if ($stmt->execute()) {
-    $res = $stmt->get_result();
-    if (!$res->fetch_assoc()) {
-        die('PERMISSION DENIED. ' . $db->error);
+$stmt->bindValue("apikey", $apikey);
+$stmt->bindValue("numberid", $numberid);
+if ($res = $stmt->execute()) {
+    if (!$res->fetchArray(SQLITE3_ASSOC)) {
+        die('PERMISSION DENIED. ' . $sqlite->lastErrorStr());
     }
 } else {
-    exit("{ \"addevent\": \"error {$db->error}\" }");
+    exit("{ \"addevent\": \"error {$sqlite->lastErrorStr()}\" }");
 }
 
 if (!isset($_POST['tid']))
     exit("{ \"addtag\": \"error: Missing tid parameter\" }");
 $tid = $_POST["tid"];
 
-$stmt = $db->prepare("INSERT INTO tags (numberid, tid) VALUES(?, ?)");
-$stmt->bind_param("is", $numberid, $tid);
+$stmt = $sqlite->prepare("INSERT INTO tags (numberid, tid) VALUES(:numberid, :tid)");
+$stmt->bindValue("numberid", $numberid);
+$stmt->bindValue("tid", $tid);
 if ($stmt->execute()) {
     exit("{ \"addtag\": \"success\" }");
 } else {
-    exit("{ \"addtag\": \"error: {$db->error}\" }");
+    exit("{ \"addtag\": \"error: {$sqlite->lastErrorStr()}\" }");
 }
 ?>

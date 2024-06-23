@@ -1,5 +1,5 @@
 <?php
-$db = new mysqli("db", "root", "e9w86036f78sd9", "racetiming");
+insert("_init.php");
 
 if (!isset($_GET['apikey']))
     exit("Missing apikey parameter");
@@ -9,7 +9,7 @@ if (!isset($_GET['raceid']))
     exit("Missing raceid parameter");
 $raceid = $_GET["raceid"];
 
-$stmt = $db->prepare("
+$stmt = $sqlite->prepare("
     SELECT
         permissions.raceid
     FROM
@@ -17,18 +17,17 @@ $stmt = $db->prepare("
     JOIN
         rest_api_keys ON (rest_api_keys.adminid = permissions.adminid)
     WHERE
-        rest_api_keys.api_key=? AND raceid=?");
-$stmt->bind_param("si", $apikey, $raceid);
-if ($stmt->execute()) {
-    $res = $stmt->get_result();
-    if (!$res->fetch_assoc())
+        rest_api_keys.api_key=:apikey AND raceid=:raceid");
+$stmt->bindValue("apikey", $apikey);
+$stmt->bindValue("raceid", $raceid);
+if ($res = $stmt->execute()) {
+    if (!$res->fetchArray(SQLITE_ASSOC))
         exit("{ \"addevent\": \"error permission denied\" }");
 } else {
-    exit("{ \"addevent\": \"error {$db->error}\" }");
+    exit("{ \"addevent\": \"error {$sqlite->lastErrorMsg()}\" }");
 }
-$stmt->close();
 
-$stmt = $db->prepare("
+$stmt = $sqlite->prepare("
     SELECT
         numbers.id as numberid,
         numbers.number as number,
@@ -45,19 +44,18 @@ $stmt = $db->prepare("
     LEFT JOIN
         tags ON (tags.numberid = numbers.id)
     WHERE 
-        races.id=?
+        races.id=:raceid
     GROUP BY
         numbers.id
     ");
 if (!$stmt) {
-        die("Unable to prepare statement " . $db->error);
+    die("Unable to prepare statement " . $sqlite->lastErrorMsg());
     }
-$stmt->bind_param("i", $raceid);
+$stmt->bindValue("raceid", $raceid);
 
 $data = array();
-if ($stmt->execute()) {
-    $res = $stmt->get_result();
-    while ($row = $res->fetch_assoc()) {
+if ($res = $stmt->execute()) {
+    while ($row = $res->fetchArray(SQLITE_ASSOC)) {
         if (!is_null($row["tids"]))
             $row["tids"] = explode(",", $row["tids"]);
         $data[] = $row;
@@ -65,7 +63,7 @@ if ($stmt->execute()) {
     $res->close();
     echo "{ \"runners\": " . json_encode($data) . " }";
 } else {
-    printf("Error " . $db->error . ". SQL: " . $sql);
+    printf("Error " . $sqlite->lastErrorMsg() . ". SQL: " . $sql);
 }
 
 

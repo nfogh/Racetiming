@@ -3,47 +3,46 @@
 
     $raceid = $_GET['raceid'];
 
-    $stmt = $db->prepare("
+    $stmt = $sqlite->prepare("
         SELECT
             lap_length,
             start
         FROM
             races
         WHERE
-            races.id=?");
-    $stmt->bind_param("i", $raceid);
-    if ($stmt->execute()) {
-        $res = $stmt->get_result();
-        if ($row = $res->fetch_assoc()) {
+            races.id=:id");
+    $stmt->bindValue("id", $raceid);
+    if ($res = $stmt->execute()) {
+        if ($row = $res->fetchArray(SQLITE3_ASSOC)) {
             $lap_length = $row['lap_length'];
             $start = DateTime::createFromFormat("Y-m-d H:i:s", $row['start']);
         }
     }
     $stmt->close();
 
-    $stmt = $db->prepare("
+    $stmt = $sqlite->prepare("
         SELECT
             numbers.number,
-            CONCAT(runners.name, ' ', runners.surname) AS name,
+            (runners.name || ' ' || runners.surname) AS name,
             eventsx.events,
             numbers.expected_time AS expected_time,
             numbers.expected_laps AS expected_laps,
             teams.name as teamname
         FROM
-            runners 
+            runners
         JOIN
             numbers ON (numbers.runnerid = runners.id)
         LEFT JOIN
             (
-                SELECT 
+                SELECT
                     numbers.id as numberid,
-                    GROUP_CONCAT(CONCAT(events.timestamp, '|', events.event) ORDER BY events.timestamp SEPARATOR ',') AS events
+                    GROUP_CONCAT(events.timestamp || '|' || events.event, ',') AS events
                 FROM
                     events
                 JOIN
                     numbers ON (numbers.id = events.numberid)
                 WHERE
-                    numbers.raceid = ?
+                    numbers.raceid = :id
                 GROUP BY
                     numberid
             ) eventsx
@@ -52,19 +51,19 @@
         LEFT JOIN
             teams ON teams.id=numbers.teamid
         WHERE
-            numbers.raceid = ?
+            numbers.raceid = :id
         ORDER BY
-            teams.id DESC,numbers.number ASC");
+            teams.id ASC,numbers.number ASC");
 
     if (!$stmt)
-        die("Unable to execute statement " . $db->error);
+        die("Unable to execute statement " . $sqlite->lastErrorMsg());
 
     $maxLaps = 0;
-    $stmt->bind_param("ii", $raceid, $raceid);
-    if ($stmt->execute()) {
-        $res = $stmt->get_result();
+    $stmt->bindValue("id", $raceid);
+    $stmt->bindValue("id", $raceid);
+    if ($res = $stmt->execute()) {
         $runners = Array();
-        while ($row = $res->fetch_assoc()) {
+        while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
             $number = $row["number"];
             $events = Array();
 
@@ -92,7 +91,7 @@
         die("Unable to execute query");
     }
     $stmt->close();
-    $now = new DateTime();
+$now = new DateTime("now", new DateTimeZone("Europe/Copenhagen"));
 ?>
 
 <table>
@@ -106,7 +105,7 @@
         printf("</tr></thead>");
         foreach ($runners as $number => $runner) {
             printf("<tr>");
-            printf("<td>{$number}</td><td>{$runner['name']}</td><td>{$runner['teamname']}</td>");
+            printf("<td>{$number}</td><td>{$runner['name']}</td><td><font color={$runner['teamname']}>{$runner['teamname']}</font></td>");
             $events = $runner['events'];
             if (count($events) > 0) {
                 $splits = Array();
@@ -148,7 +147,7 @@
             printf("<tr>");
             printf("<td>{$number}</td>");
             printf("<td>{$runner['name']} {$runner['surname']}</td>");
-            printf("<td><font color={$runner['teamname']}>{$runner['teamname']}</color></td>");
+            printf("<td><font color={$runner['teamname']}>{$runner['teamname']}</font></td>");
             printf("<td>{$runner['expected_laps']}</td>");
             printf("<td>{$runner['expected_time']}</td>");
             printf("</tr>");
