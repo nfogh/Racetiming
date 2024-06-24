@@ -25,7 +25,7 @@
             JOIN races   ON (numbers.raceid   = races.id)";
     if ($res = $sqlite->query($sql)) {
     
-        while ($row = $res->fetchArray(SQLITE_ASSOC))
+        while ($row = $res->fetchArray(SQLITE3_ASSOC))
         {
             printf("<tr>");
             printf("<td>{$row['racename']}</td>");

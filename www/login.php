@@ -22,14 +22,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if (empty(trim($_POST["username"]))) {
         $username_err = "Please enter username.";
     } else{
-        $username = sqlite_escape_string(trim($_POST["username"]));
+        $username = SQLite3::escapeString(trim($_POST["username"]));
     }
     
     // Check if password is empty
     if(empty(trim($_POST["password"]))){
         $password_err = "Please enter your password.";
     } else{
-        $password = sqlite_escape_string(trim($_POST["password"]));
+        $password = SQLite3::escapeString(trim($_POST["password"]));
     }
     
     // Validate credentials
@@ -45,7 +45,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         $sql = 'SELECT name, password, id FROM admins WHERE name = "' . $username . '"';
         if ($res = $sqlite->query($sql)) {
-            if ($row = $res->fetchArray(SQLITE_ASSOC)) {
+            if ($row = $res->fetchArray(SQLITE3_ASSOC)) {
                 if (password_verify($password, $row['password'])) {
                      $_SESSION["loggedin"] = true;
                      $_SESSION["id"] = $id;
@@ -59,7 +59,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 $login_err = $sqlite->lastErrorMsg();
             }
         } else {
-            $login_err = $sqlite->lastErrorStr();
+            $login_err = $sqlite->lastErrorMsg();
         }
     }
 }

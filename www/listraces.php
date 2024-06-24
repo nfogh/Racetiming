@@ -7,7 +7,7 @@
             <tr><td>ID</td><td>Name</td><td>Select</td></tr>
             <?php
                 if ($res = $sqlite->query("SELECT id, name FROM races")) {
-                    while ($row = $res->fetchArray(SQLITE_ASSOC))
+                    while ($row = $res->fetchArray(SQLITE3_ASSOC))
                     {
                         $id = $row['id'];
                         $name = $row['name'];

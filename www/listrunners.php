@@ -8,7 +8,7 @@
                     <tr><td>ID</td><td>Name</td><td>Surname</td><td>Select</td></tr>
                         <?php
                             if ($res = $sqlite->query("SELECT * FROM runners")) {
-                                while ($row = $res->fetchArray(SQLITE_ASSOC))
+                                while ($row = $res->fetchArray(SQLITE3_ASSOC))
                                 {
                                     printf('<tr>');
                                     printf('<td>' . $row['id'] . '</td>');

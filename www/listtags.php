@@ -8,7 +8,7 @@
                     <?php
                         if ($res = $sqlite->query("SELECT tags.numberid as numberid, tags.tid as tid, tags.id as id, numbers.number as number, numbers.raceid as raceid, numbers.runnerid as runnerid, runners.name as runnername, runners.surname as runnersurname, races.name as racename FROM tags JOIN numbers ON (numbers.id = tags.numberid) JOIN runners ON (runners.id = numbers.runnerid) JOIN races ON (races.id = numbers.raceid)")) {
                         
-                            while ($row = $res->fetchArray(SQLITE_ASSOC)) {
+                            while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
                                 printf("<tr>");
                                 printf("<td>{$row['racename']}</td><td>{$row['number']}</td><td>{$row['runnername']} {$row['runnersurname']}</td><td>{$row['tid']}</td>\n");
                                 printf("<td><input type=checkbox name=check[{$row['id']}]></td>");
