@@ -3,8 +3,9 @@ $title = 'Delete race';
 $masthead_image = 'assets/races/smormosen.jpg';
 $masthead_text = 'Race admin';
 
-require '_adminpage.php';
 require '_init.php';
+require '_adminpage.php';
+
 ?>
 
 <?php

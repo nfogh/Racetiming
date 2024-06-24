@@ -9,35 +9,35 @@ require '_header.php';
 if($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($_POST['id']))
         $errorstring  = 'The id of the race was not set';
-    $id = sqlite_escape_string(htmlspecialchars($_POST["id"]));
+    $id = SQLite3::escapeString(htmlspecialchars($_POST["id"]));
 
     if (empty($_POST['name']))
         $errorstring  = 'The name of the race was not set';
-    $name = sqlite_escape_string(htmlspecialchars($_POST["name"]));
+    $name = SQLite3::escapeString(htmlspecialchars($_POST["name"]));
 
     if (empty($_POST['description']))
         $errorstring = 'The description of the race was not set';
-    $description = sqlite_escape_string($_POST["description"]);
+    $description = SQLite3::escapeString($_POST["description"]);
 
     if (empty($_POST['start']))
         $errorstring = 'The start of the race was not set';
-    $start = sqlite_escape_string(htmlspecialchars($_POST["start"]));
+    $start = SQLite3::escapeString(htmlspecialchars($_POST["start"]));
 
     if (empty($_POST['finish']))
         $errorstring = 'The finish of the race was not set';
-    $finish = sqlite_escape_string(htmlspecialchars($_POST["finish"]));
+    $finish = SQLite3::escapeString(htmlspecialchars($_POST["finish"]));
 
     if (empty($_POST['address']))
         $errorstring = 'The address of the race was not set';
-    $address = sqlite_escape_string(htmlspecialchars($_POST["address"]));
+    $address = SQLite3::escapeString(htmlspecialchars($_POST["address"]));
 
     if (empty($_POST['latitude']))
         $errorstring = 'The latitude of the race was not set';
-    $latitude = sqlite_escape_string(htmlspecialchars($_POST["latitude"]));
+    $latitude = SQLite3::escapeString(htmlspecialchars($_POST["latitude"]));
 
     if (empty($_POST['longitude']))
         $errorstring  = 'The longitude of the race was not set';
-    $longitude = sqlite_escape_string(htmlspecialchars($_POST['longitude']));
+    $longitude = SQLite3::escapeString(htmlspecialchars($_POST['longitude']));
 
     if (!isset($errorstring)) {
         $sql = "UPDATE races SET name='{$name}', description='{$description}', start='${start}', finish='{$finish}', address='{$address}', gpscoords=POINT({$latitude},{$longitude}) WHERE id={$id}";
@@ -52,11 +52,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 } else {
     if (empty($_GET['id']))
         $errorstring  = 'The ID of the race was not specified';
-    $id = sqlite_escape_string($db, htmlspecialchars($_GET['id']));
+    $id = SQLite3::escapeString(htmlspecialchars($_GET['id']));
 }
 
 if (!$errorstring) {
-    $sql = "SELECT name, description, start, finish, address, ST_X(gpscoords) as latitude, ST_Y(gpscoords) as longitude FROM races WHERE id=${id}";
+    $sql = "SELECT name, description, start, finish, address, latitude, longitude, lap_length FROM races WHERE id=${id}";
     if ($res = $sqlite->query($sql)) {
         if ($row = $res->fetchArray(SQLITE3_ASSOC))
         {
@@ -67,6 +67,7 @@ if (!$errorstring) {
             $address = $row['address'];
             $latitude = $row['latitude'];
             $longitude = $row['longitude'];
+            $lap_length = $row['lap_length'];
         } else {
             $errorstring = "Unable to get race information";
         }
@@ -98,7 +99,7 @@ if (isset($successstring))
       </div>
       <div class="medium-12 cell">
         <label>Desciption
-          <textarea name="description"><?=$description ?></textarea>
+          <textarea name="description" rows=20><?=$description ?></textarea>
         </label>
       </div>
       <div class="medium-6 cell">
@@ -140,7 +141,12 @@ if (isset($successstring))
         <input type="text" name="longitude" value="<?=$longitude ?>">
         </label>
       </div>
-      <div class="medium-12 cell">
+      <div class="medium-6 cell">
+        <label>Length
+         <input type="text" name="lap_length" value="<?=$lap_length ?>">
+        </label>
+      </div>
+     <div class="medium-12 cell">
         <div class="text-right">
           <input type="submit" class="button" name="edit" value="Modify">
         </div>

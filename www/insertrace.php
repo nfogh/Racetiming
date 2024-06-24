@@ -51,6 +51,11 @@
         <input type="text" name="longitude" placeholder="Enter longitude">
         </label>
       </div>
+      <div class="medium-6 cell">
+        <label>Length
+          <input type="text" name="lap_length" value="<?=$lap_length ?>">
+        </label>
+      </div>
       <div class="medium-12 cell">
         <div class="text-right">
           <input type="submit" class="button" name="create" value="Create new race">
