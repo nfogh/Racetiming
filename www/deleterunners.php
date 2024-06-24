@@ -14,8 +14,8 @@ foreach ($_POST['check'] as $id => $value)
 
 $sql = "DELETE FROM runners WHERE id IN (" . implode(", ", $ids) . ")";
 
-if (!$db->query($sql))
-    $errorstring = "<h2>Unable to delete runner. " . $db->error . "</h2>";
+if (!$sqlite->query($sql))
+    $errorstring = "<h2>Unable to delete runner. " . $sqlite->lastErrorStr() . "</h2>";
 ?>
 
 <? require '_header.php' ?>

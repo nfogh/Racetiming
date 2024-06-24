@@ -26,10 +26,10 @@ $event = sqlite_escape_string(htmlspecialchars($_POST["event"]));
 
 
 $sql = 'INSERT INTO events (numberid, timestamp, msecs, event) VALUES ("' . $numberid . '", "' . $timestamp . '", "' . $msecs . '", "' . $event . '")';
-     if ($db->query($sql)) {
+     if ($sqlite->query($sql)) {
          printf("<div class='callout large success'>Inserted event</div>");
      } else {
-         printf("<div class='callout large alert'>Error {$db->lastErrorMsg()}. SQL: {$sql}</div>");
+         printf("<div class='callout large alert'>Error {$sqlite->lastErrorMsg()}. SQL: {$sql}</div>");
     }
 ?>
 

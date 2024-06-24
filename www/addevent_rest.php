@@ -25,7 +25,7 @@ if ($res = $sqlite->query($sql)) {
     }
     $res->close();
 } else {
-    exit("{ \"addevent\": \"error {$sqlite->lastErrorStr()}\" }");
+    exit("{ \"addevent\": \"error {$sqlite->lastErrorMsg()}\" }");
 }
 
 if (!isset($_POST['timestamp']))
@@ -46,6 +46,6 @@ $sql = 'INSERT INTO events (numberid, timestamp, msecs, event) VALUES ("' . $num
 if ($sqlite->query($sql)) {
     exit("{ \"addevent\": \"success\" }");
 } else {
-    exit("{ \"addevent\": \"error: {$db->lastErrorStr}\" }");
+    exit("{ \"addevent\": \"error: {$sqlite->lastErrorMsg()}\" }");
 }
 ?>
