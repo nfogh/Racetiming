@@ -1,4 +1,6 @@
 <?php
+$config = parse_ini_file('config/config.ini', true);
+
 if (!class_exists('MyDB')) {
    class MyDB extends SQLite3 {
       function __construct() {
