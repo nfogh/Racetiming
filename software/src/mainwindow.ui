@@ -385,10 +385,7 @@
            <string>Enter custom event</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="1" column="0" colspan="4">
-            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
-           </item>
-           <item row="2" column="2">
+           <item row="3" column="2">
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -400,6 +397,9 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item row="1" column="0" colspan="4">
+            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_8">
@@ -421,6 +421,31 @@
              </property>
             </widget>
            </item>
+           <item row="2" column="0" colspan="4">
+            <widget class="QGroupBox" name="logEventsToFileGroupBox">
+             <property name="title">
+              <string>Log events to fie</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_9">
+              <item row="0" column="0">
+               <widget class="QLineEdit" name="logEventsToFilePathLineEdit"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="QToolButton" name="logEventsToFileBrowsePathToolButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -431,68 +456,6 @@
         <string>Tag manager</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
-        <item row="6" column="1">
-         <spacer name="verticalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="6">
-         <widget class="QPushButton" name="writeTagNextPushButton">
-          <property name="text">
-           <string>Next</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0" colspan="8">
-         <widget class="QLabel" name="label_16">
-          <property name="text">
-           <string>Runners</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QLabel" name="label_14">
-          <property name="text">
-           <string>RFID EPC</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLabel" name="writeTagCurrentTagLabel">
-          <property name="text">
-           <string>None</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="writeTagNumberLabel">
-          <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLabel" name="writeTagNameLabel">
-          <property name="text">
-           <string>None</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="7">
-         <widget class="QProgressBar" name="writeTagProgressBar">
-          <property name="value">
-           <number>24</number>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QLabel" name="label_13">
           <property name="text">
@@ -507,13 +470,44 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0" colspan="8">
-         <widget class="QTableView" name="writeTagsTableView"/>
+        <item row="0" column="3">
+         <widget class="QLabel" name="label_14">
+          <property name="text">
+           <string>RFID EPC</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QComboBox" name="writeTagTagComboBox"/>
+        </item>
+        <item row="1" column="6">
+         <widget class="QPushButton" name="writeTagNextPushButton">
+          <property name="text">
+           <string>Next</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="writeTagNameLabel">
+          <property name="text">
+           <string>None</string>
+          </property>
+         </widget>
         </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_11">
           <property name="text">
            <string>Number</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="8">
+         <widget class="QTableView" name="writeTagsTableView"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_15">
+          <property name="text">
+           <string>Current tag:</string>
           </property>
          </widget>
         </item>
@@ -524,15 +518,33 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_15">
+        <item row="3" column="1">
+         <widget class="QLabel" name="writeTagCurrentTagLabel">
           <property name="text">
-           <string>Current tag:</string>
+           <string>None</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="3">
-         <widget class="QComboBox" name="writeTagTagComboBox"/>
+        <item row="1" column="7">
+         <widget class="QProgressBar" name="writeTagProgressBar">
+          <property name="value">
+           <number>24</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="8">
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>Runners</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="writeTagNumberLabel">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

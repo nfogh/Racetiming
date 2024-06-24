@@ -8,6 +8,7 @@
 #include <RacetimingInterface/RacetimingInterface.h>
 #include <time.h>
 #include <QSettings>
+#include <QFileDialog>
 #include "PushButtonDelegate.h"
 
 struct tm Now()
@@ -164,10 +165,12 @@ void MainWindow::racetimingInterface_runnersUpdated()
         });
         ui->runnersTableView->setIndexWidget(m_raceProgressSortFilterProxyModel.index(row, 4), finishButton);
 
+        const auto sourceRow = m_attachTagSortFilterProxyModel.mapToSource(m_attachTagSortFilterProxyModel.index(row, 0)).row();
+
         const auto attachTagButton = new QPushButton("Attach");
-        connect(attachTagButton, &QPushButton::clicked, this, [this, row](){
-            qDebug() << "Attaching tag for " << m_runners[row].numberid;
-            m_racetimingInterface->attachTag(m_runners[row].numberid, ui->writeTagCurrentTagLabel->text().toStdString());
+        connect(attachTagButton, &QPushButton::clicked, this, [this, sourceRow](){
+            qDebug() << "Attaching tag for " << m_runners[sourceRow].numberid;
+            m_racetimingInterface->attachTag(m_runners[sourceRow].numberid, ui->writeTagCurrentTagLabel->text().toStdString());
             m_racetimingInterface->requestRunners(m_races[ui->availableRacesComboBox->currentIndex()].id);
         });
         ui->writeTagsTableView->setIndexWidget(m_attachTagSortFilterProxyModel.index(row, 4), attachTagButton);
@@ -216,7 +219,7 @@ void MainWindow::on_connectRFID2ConnectPushButton_clicked()
 {
     if (!m_tagReaders[1]) {
         m_tagReaders[1] = TagReaders::CreateM6EReader(ui->connectRFID2ConnectionComboBox->getPort().toStdString());
-        m_tagReaders[1]->setTagDetectedCallback([this](const auto& tag) { tagDetected(0, tag); });
+        m_tagReaders[1]->setTagDetectedCallback([this](const auto& tag) { tagDetected(1, tag); });
         m_tagReaders[1]->setConnectedCallback([this] {
             ui->connectRFID2StatusLabel->setText("Connected");
             ui->connectRFID2StatusLabel->setStyleSheet("color:green");});
@@ -234,6 +237,16 @@ void MainWindow::on_connectRFID2ConnectPushButton_clicked()
 void MainWindow::tagDetected(int readerIndex, const std::string_view tag)
 {
     ui->writeTagCurrentTagLabel->setText(QString::fromStdString(static_cast<const std::string>(tag)));
+
+    qDebug() << "Reader " << readerIndex << " tag " << QString::fromStdString(static_cast<const std::string>(tag));
+
+    if (ui->logEventsToFileGroupBox->isChecked()) {
+        QFile f(ui->logEventsToFilePathLineEdit->text());
+        if (f.open(QIODevice::WriteOnly | QIODevice::Append)) {
+            QTextStream s(&f);
+            s << "Reader " << readerIndex << " tag " << QString::fromStdString(std::string(tag));
+        }
+    }
 
     const auto runner = std::find_if(m_runners.cbegin(), m_runners.cend(), [&tag](const auto& runner) {
         return std::find(runner.tags.cbegin(), runner.tags.cend(), tag) != runner.tags.cend();
@@ -303,5 +316,12 @@ void MainWindow::on_connectLocalPushButton_clicked()
         [this](const auto& runners) { m_runners = runners; racetimingInterface_runnersUpdated(); }
         );
     m_racetimingInterface->requestRaces();
+}
+
+void MainWindow::on_logEventsToFileBrowsePathToolButton_triggered(QAction *arg1)
+{
+    const auto path = QFileDialog::getSaveFileName(this, "Select file", ui->logEventsToFilePathLineEdit->text(), "Text files (*.txt);; All Files (*.*)");
+    if (!path.isNull())
+        ui->logEventsToFilePathLineEdit->setText(path);
 }
 
