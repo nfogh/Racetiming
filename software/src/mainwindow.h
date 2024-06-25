@@ -54,7 +54,7 @@ private:
     void updateWriteTagsLabels();
 
     void runnerLapStart(int runnerID);
-    void runnerFinished(int runnerID);
+    void runnerFinished(int runnerID, bool manual = false);
 
     Ui::MainWindow *ui;
 

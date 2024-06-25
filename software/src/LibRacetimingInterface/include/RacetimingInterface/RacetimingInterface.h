@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IRacetimingInterface.h"
-#include <filesystem>
 #include <string_view>
 #include <memory>
 
@@ -15,7 +14,7 @@ std::unique_ptr<IRacetimingInterface> CreateTestRacetimingInterface(
     const IRacetimingInterface::RacesTableUpdatedCallback& racesTableUpdatedCallback,
     const IRacetimingInterface::RunnersTableUpdatedCallback& runnersTableUpdatedCallback);
 std::unique_ptr<IRacetimingInterface> CreateLocalRacetimingInterface(
-    const std::filesystem::path& path,
+    const std::string& path,
     const IRacetimingInterface::RacesTableUpdatedCallback& racesTableUpdatedCallback,
     const IRacetimingInterface::RunnersTableUpdatedCallback& runnersTableUpdatedCallback);
 }

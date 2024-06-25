@@ -2,7 +2,7 @@
 
 namespace RacetimingInterface {
     LocalRacetimingInterface::LocalRacetimingInterface(
-        const std::filesystem::path& path,
+        const std::string& path,
         const RacesTableUpdatedCallback& racesTableUpdatedCallback,
         const RunnersTableUpdatedCallback& runnersTableUpdatedCallback) :
         m_path(path),

@@ -15,7 +15,7 @@ std::unique_ptr<IRacetimingInterface> CreateWebRacetimingInterface(
 }
 
 std::unique_ptr<IRacetimingInterface> CreateLocalRacetimingInterface(
-    const std::filesystem::path& filePath,
+    const std::string& filePath,
     const IRacetimingInterface::RacesTableUpdatedCallback& racesTableUpdatedCallback,
     const IRacetimingInterface::RunnersTableUpdatedCallback& runnersTableUpdatedCallback
     )

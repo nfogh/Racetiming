@@ -61,8 +61,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_attachTagSortFilterProxyModel.setAcceptedColumns({RunnersTableModel::number_col, RunnersTableModel::name_col, RunnersTableModel::surname_col, RunnersTableModel::tag_col, RunnersTableModel::attachTag_col});
     ui->writeTagsTableView->setModel(&m_attachTagSortFilterProxyModel);
     ui->writeTagsTableView->setAlternatingRowColors(true);
-    ui->writeTagsTableView->setSortingEnabled(true);
-    ui->writeTagsTableView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
+    ui->writeTagsTableView->setSortingEnabled(false);
+//ui->writeTagsTableView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     QSettings settings;
     ui->apiKeyLineEdit->setText(settings.value("state/apikey", "Please enter the API key to your web service").toString());
@@ -121,7 +121,7 @@ void MainWindow::runnerLapStart(const int runnerIndex)
     appendToEvents(runnerName + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a start/lap event\n");
 }
 
-void MainWindow::runnerFinished(const int runnerIndex)
+void MainWindow::runnerFinished(const int runnerIndex, const bool manual)
 {
     const auto runnerName = QString::fromStdString(m_runners[runnerIndex].name) + " " + QString::fromStdString(m_runners[runnerIndex].surname);
     if (m_latestEvent.count(runnerIndex) > 0) {
@@ -137,7 +137,10 @@ void MainWindow::runnerFinished(const int runnerIndex)
     m_runnerFinished[runnerIndex] = true;
     m_latestEvent[runnerIndex] = std::chrono::steady_clock::now();
 
-    m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::Finish);
+    if (!ui->onlyManualFinishCheckBox->isChecked() || manual) {
+        m_racetimingInterface->sendEvent(m_runners[runnerIndex].numberid, Now(), RacetimingInterface::EventType::Finish);
+    }
+
     m_activeRunnersForm.runnerFinish(m_runners[runnerIndex].name + " " + m_runners[runnerIndex].surname);
 
     appendToEvents(runnerName + " - number id " + QString::number(m_runners[runnerIndex].numberid) + " recorded a finish event\n");
@@ -160,13 +163,13 @@ void MainWindow::racetimingInterface_runnersUpdated()
         const auto finishButton = new QPushButton("Finish");
         connect(finishButton, &QPushButton::clicked, this, [this, row](){
             qDebug() << "Finished pushed for " << row;
-            runnerFinished(row);
+            runnerFinished(row, true);
         });
         ui->runnersTableView->setIndexWidget(m_raceProgressSortFilterProxyModel.index(row, 4), finishButton);
 
         const auto attachTagButton = new QPushButton("Attach");
         connect(attachTagButton, &QPushButton::clicked, this, [this, row](){
-            qDebug() << "Attaching tag for " << m_runners[row].numberid;
+            qDebug() << "Attaching tag for row " << row << " number " << m_runners[row].number << " numberid " << m_runners[row].numberid;
             m_racetimingInterface->attachTag(m_runners[row].numberid, ui->writeTagCurrentTagLabel->text().toStdString());
             m_racetimingInterface->requestRunners(m_races[ui->availableRacesComboBox->currentIndex()].id);
         });
@@ -216,7 +219,7 @@ void MainWindow::on_connectRFID2ConnectPushButton_clicked()
 {
     if (!m_tagReaders[1]) {
         m_tagReaders[1] = TagReaders::CreateM6EReader(ui->connectRFID2ConnectionComboBox->getPort().toStdString());
-        m_tagReaders[1]->setTagDetectedCallback([this](const auto& tag) { tagDetected(0, tag); });
+        m_tagReaders[1]->setTagDetectedCallback([this](const auto& tag) { tagDetected(1, tag); });
         m_tagReaders[1]->setConnectedCallback([this] {
             ui->connectRFID2StatusLabel->setText("Connected");
             ui->connectRFID2StatusLabel->setStyleSheet("color:green");});
@@ -233,6 +236,7 @@ void MainWindow::on_connectRFID2ConnectPushButton_clicked()
 
 void MainWindow::tagDetected(int readerIndex, const std::string_view tag)
 {
+    qDebug() << "Reader " << readerIndex << " detected tag " << tag;
     ui->writeTagCurrentTagLabel->setText(QString::fromStdString(static_cast<const std::string>(tag)));
 
     const auto runner = std::find_if(m_runners.cbegin(), m_runners.cend(), [&tag](const auto& runner) {
@@ -242,6 +246,8 @@ void MainWindow::tagDetected(int readerIndex, const std::string_view tag)
     if (runner != m_runners.cend()) {
         const auto runnerIndex = std::distance(m_runners.cbegin(), runner);
         m_runnersTableModel.setSelectedRowIndex(runnerIndex);
+
+        qDebug() << "  Matching runner " << runnerIndex << ": " << runner->name << " " << runner->surname;
 
         // Do not put event if race has not started
         if (!m_raceStarted)

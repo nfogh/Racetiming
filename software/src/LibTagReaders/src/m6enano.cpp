@@ -1,5 +1,6 @@
 #include "m6enano.h"
 #include <thread>
+#include <stdexcept>
 #include <QDebug>
 #include <QCoreApplication>
 

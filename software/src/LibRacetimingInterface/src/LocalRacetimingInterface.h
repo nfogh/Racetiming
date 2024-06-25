@@ -1,14 +1,13 @@
 #pragma once
 
 #include <IRacetimingInterface.h>
-#include <filesystem>
 
 namespace RacetimingInterface {
     class LocalRacetimingInterface : public IRacetimingInterface
     {
     public:
         LocalRacetimingInterface(
-            const std::filesystem::path& path,
+            const std::string& path,
             const RacesTableUpdatedCallback& racesTableUpdatedCallback,
             const RunnersTableUpdatedCallback& runnersTableUpdatedCallback
         );
@@ -25,6 +24,6 @@ namespace RacetimingInterface {
         RacesTableUpdatedCallback m_racesTableUpdatedCallback;
         RunnersTableUpdatedCallback m_runnersTableUpdatedCallback;
 
-        std::filesystem::path m_path;
+        std::string m_path;
     };
 }

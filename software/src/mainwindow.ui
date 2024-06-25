@@ -31,7 +31,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -385,10 +385,7 @@
            <string>Enter custom event</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="1" column="0" colspan="4">
-            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
-           </item>
-           <item row="2" column="2">
+           <item row="3" column="2">
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -400,6 +397,9 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item row="2" column="0" colspan="4">
+            <widget class="QPlainTextEdit" name="eventsPlainTextEdit"/>
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_8">
@@ -417,7 +417,24 @@
               <number>600</number>
              </property>
              <property name="value">
-              <number>30</number>
+              <number>120</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Only manual finish</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="onlyManualFinishCheckBox">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -488,6 +505,12 @@
         </item>
         <item row="1" column="7">
          <widget class="QProgressBar" name="writeTagProgressBar">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="value">
            <number>24</number>
           </property>
@@ -532,7 +555,14 @@
          </widget>
         </item>
         <item row="1" column="3">
-         <widget class="QComboBox" name="writeTagTagComboBox"/>
+         <widget class="QComboBox" name="writeTagTagComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
