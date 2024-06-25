@@ -5,7 +5,6 @@ CREATE TABLE `admins` (
 ,  `created_at` datetime DEFAULT current_timestamp
 , salt varchar(32),  UNIQUE (`name`)
 );
-CREATE TABLE sqlite_sequence(name,seq);
 CREATE TABLE `events` (
   `id` integer NOT NULL PRIMARY KEY AUTOINCREMENT
 ,  `timestamp` timestamp NOT NULL

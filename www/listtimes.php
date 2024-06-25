@@ -17,8 +17,10 @@
         <div class='cell'>
             <?php
                 if ($res = $sqlite->query("SELECT id, name, description, start, finish FROM races ORDER BY finish DESC")) {
+                    $numCols = 0;
                     while ($row = $res->fetchArray(SQLITE3_ASSOC))
                     {
+                        $numCols++;
                         $id = $row['id'];
                         $start = $row['start'];
                         $name = $row['name'];
@@ -28,6 +30,9 @@
                         printf("<h2><a href='/listtimes.php?raceid={$id}'>{$name}</a></h2>");
                         printf("<p>{$description}</p>");
                         printf("</div>");
+                    }
+                    if ($numCols == 0) {
+                        printf("<div class='callout warning'>No races defined. You can add one in the <a href='admin.php'>admin interface</a></div>");
                     }
                 }
             ?>

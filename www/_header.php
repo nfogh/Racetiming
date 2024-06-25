@@ -11,14 +11,14 @@
                            
 <head>
      <?= $extraheaders ?>
-  <title><?= $title ?></title>
+  <title><?= $config['main']['title'] ?></title>
  </head>
  <body>
 
  <div class="top-bar">
   <div class="top-bar-left">
     <ul class="dropdown menu" data-dropdown-menu>
-      <li class="menu-text">BK Health timing</li>
+      <li class="menu-text"><?= $config['main']['title'] ?></li>
       <li>
         <a href="#">Races</a>
         <ul class="menu vertical">

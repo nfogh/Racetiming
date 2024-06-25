@@ -5,3 +5,4 @@ www/config/myconfig.ini
 *~
 \#*
 .vscode
+db/database.db
