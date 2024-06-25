@@ -9,10 +9,9 @@
                     <td>
                         <select name="raceid">
                             <?php
-                                if ($res = $db->query("SELECT id, name FROM races")) {
-                                    while ($row = $res->fetch_assoc())
+                                if ($res = $sqlite->query("SELECT id, name FROM races")) {
+                                    while ($row = $res->fetchArray(SQLITE_ASSOC))
                                         printf("<option value='{$row['id']}'>{$row['name']}</option>");
-                                    $res->close();
                                 }
                             ?>
                         </select>
@@ -20,10 +19,9 @@
                     <td>
                         <select name="runnerid">
                             <?php
-                                if ($res = $db->query("SELECT id, name, surname FROM runners")) {
-                                    while ($row = $res->fetch_assoc())
+                                if ($res = $sqlite->query("SELECT id, name, surname FROM runners ORDER BY name")) {
+                                    while ($row = $res->fetchArray(SQLITE_ASSOC))
                                         printf("<option value={$row['id']}>{$row['name']} {$row['surname']}</option>");
-                                    $res->close();
                                 }
                             ?>
                         </select>

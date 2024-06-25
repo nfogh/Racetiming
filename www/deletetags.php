@@ -15,8 +15,8 @@ foreach ($_POST['check'] as $id => $value)
 
 $sql = "DELETE FROM tags WHERE id IN (" . implode(", ", $ids) . ")";
 
-if (!$db->query($sql)) {
-    printf("<h2>Unable to delete tags. " . $db->error . "</h2>");
+if (!$mysql->query($sql)) {
+    printf("<h2>Unable to delete tags. " . $mysql->lastErrorMsg() . "</h2>");
 } else {
     printf("<h1>Deleted tags %s</h1>", implode(", ", $ids));
 }

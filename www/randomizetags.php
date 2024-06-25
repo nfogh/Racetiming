@@ -10,30 +10,26 @@ require '_header.php';
 <?php
 if (empty($_GET['raceid']))
     $errorstring  = 'The ID the race was not set';
-$raceid = mysqli_real_escape_string($db, htmlspecialchars($_GET['raceid']));
+$raceid = sqlite_escape_string(htmlspecialchars($_GET['raceid']));
 
 $sql = "SELECT id from numbers WHERE numbers.raceid={$raceid}";
-if ($res = $db->query($sql)) {
+if ($res = $sqlite->query($sql)) {
     $numbers = array();
-    while ($row = $res->fetch_assoc())
+    while ($row = $res->fetchArray(SQLITE3_ASSOC))
         $numbers[] = $row['id'];
-
-    $res->close();
 }
 else {
-    die("<h2>Unable to get numbers. " . $db->error . "</h2>");
+    die("<h2>Unable to get numbers. " . $sqlite->lastErrorMsg() . "</h2>");
 }
 
 $sql = "SELECT tags.numberid FROM tags JOIN numbers ON (tags.numberid = numbers.id) WHERE numbers.raceid={$raceid}";
-if ($res = $db->query($sql)) {
+if ($res = $sqlite->query($sql)) {
     $existingtags = array();
-    while ($row = $res->fetch_assoc())
+    while ($row = $res->fetchArray(SQLITE3_ASSOC))
         $existingtags[] = $row['numberid'];
-
-    $res->close();
 }
 else {
-    die("<h2>Unable to get tags. " . $db->error . "</h2>");
+    die("<h2>Unable to get tags. " . $sqlite->lastErrorMsg() . "</h2>");
 }
 
 $missingnumbers = array_diff($numbers, $existingtags);
@@ -53,8 +49,8 @@ foreach ($missingnumbers as $missingnumber) {
 
 }
 
-if (!$db->query($sql)) {
-    die("<h2>Unable to get tags. " . $db->error . "</h2>");
+if (!$sqlite->query($sql)) {
+    die("<h2>Unable to get tags. " . $sqlite->lastErrorMsg() . "</h2>");
 }
 else {
     printf("Generated tags");

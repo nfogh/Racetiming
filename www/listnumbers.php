@@ -6,9 +6,9 @@
 <table>
 <tr><td>Race [ID]</td><td>Runner [ID]</td><td>Number</td><td>Expected laps</td><td>Expected time [min]</td></tr>
 <?php
-    if ($res = $db->query("SELECT numbers.id as id, numbers.raceid as raceid, numbers.runnerid as runnerid, numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time, races.name as racename, runners.name as runnername, runners.surname as runnersurname FROM numbers JOIN races ON races.id = numbers.raceid JOIN runners ON runners.id = numbers.runnerid ORDER BY raceid, number")) {
+    if ($res = $sqlite->query("SELECT numbers.id as id, numbers.raceid as raceid, numbers.runnerid as runnerid, numbers.number as number, numbers.expected_laps as laps, numbers.expected_time as time, races.name as racename, runners.name as runnername, runners.surname as runnersurname FROM numbers JOIN races ON races.id = numbers.raceid JOIN runners ON runners.id = numbers.runnerid ORDER BY raceid, number")) {
     
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetchArray(SQLITE3_ASSOC))
         {
             printf("<tr>");
             printf("<td>{$row['racename']} [{$row['raceid']}]</td>");
@@ -19,8 +19,6 @@
             printf("<td><input type=checkbox name=check[${row['id']}]></td>");
             printf("</tr>");
         }
-    
-        $res->close();
     }
 ?> 
 </table>

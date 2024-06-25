@@ -10,25 +10,26 @@ require '_header.php';
 
 if (!isset($_POST['numberid']))
     exit("Missing numberid parameter");
-$numberid = mysqli_real_escape_string($db, htmlspecialchars($_POST["numberid"]));
+$numberid = sqlite_escape_string(htmlspecialchars($_POST["numberid"]));
 
 if (!isset($_POST['timestamp']))
     exit("Missing timestamp parameter");
-$timestamp = mysqli_real_escape_string($db, htmlspecialchars($_POST["timestamp"]));
+$timestamp = sqlite_escape_string(htmlspecialchars($_POST["timestamp"]));
 
 if (!isset($_POST['msecs']))
     exit("Missing msecs parameter");
-$msecs = mysqli_real_escape_string($db, htmlspecialchars($_POST["msecs"]));
+$msecs = sqlite_escape_string(htmlspecialchars($_POST["msecs"]));
 
 if (!isset($_POST['event']))
     exit("Missing event parameter");
-$event = mysqli_real_escape_string($db, htmlspecialchars($_POST["event"]));
+$event = sqlite_escape_string(htmlspecialchars($_POST["event"]));
+
 
 $sql = 'INSERT INTO events (numberid, timestamp, msecs, event) VALUES ("' . $numberid . '", "' . $timestamp . '", "' . $msecs . '", "' . $event . '")';
-     if ($db->query($sql)) {
+     if ($sqlite->query($sql)) {
          printf("<div class='callout large success'>Inserted event</div>");
      } else {
-         printf("<div class='callout large alert'>Error {$db->error}. SQL: {$sql}</div>");
+         printf("<div class='callout large alert'>Error {$sqlite->lastErrorMsg()}. SQL: {$sql}</div>");
     }
 ?>
 

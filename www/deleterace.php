@@ -3,8 +3,9 @@ $title = 'Delete race';
 $masthead_image = 'assets/races/smormosen.jpg';
 $masthead_text = 'Race admin';
 
-require '_adminpage.php';
 require '_init.php';
+require '_adminpage.php';
+
 ?>
 
 <?php
@@ -17,11 +18,11 @@ require '_init.php';
     foreach ($_POST['check'] as $id => $value)
         array_push($ids, $id);
 
-    $res = $db->query('DELETE FROM races WHERE id IN (' . implode(', ', $ids) . ')');
+    $res = $sqlite->query('DELETE FROM races WHERE id IN (' . implode(', ', $ids) . ')');
     if (!$res) {
-        $errorstring = 'Unable to delete race. ' . $db->error;
+        $errorstring = 'Unable to delete race. ' . $sqlite->lastErrorMsg();
     } else {
-        if ($db->affected_rows != count($ids))
+        if ($sqlite->changes() != count($ids))
             $errorstring = 'Unable to delete all races (' . implode(', ', $ids) . '). One or more of the races was not found.';
         else {
             $successstring = 'Deleted races with id ' . implode(", ", $ids) . ' ' . $res->num_rows;

@@ -49,6 +49,8 @@ private slots:
 
     void on_connectLocalPushButton_clicked();
 
+    void on_logEventsToFileBrowsePathToolButton_triggered(QAction *arg1);
+
 private:
     void tagDetected(int readerIndex, std::string_view epc);
     void updateWriteTagsLabels();

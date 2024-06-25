@@ -16,8 +16,8 @@
         </div>
         <div class='cell'>
             <?php
-                if ($res = $db->query("SELECT id, name, description, start, finish FROM races ORDER BY finish DESC")) {
-                    while ($row = $res->fetch_assoc())
+                if ($res = $sqlite->query("SELECT id, name, description, start, finish FROM races ORDER BY finish DESC")) {
+                    while ($row = $res->fetchArray(SQLITE3_ASSOC))
                     {
                         $id = $row['id'];
                         $start = $row['start'];
@@ -29,8 +29,6 @@
                         printf("<p>{$description}</p>");
                         printf("</div>");
                     }
-                
-                    $res->close();
                 }
             ?>
         </div>
@@ -43,23 +41,22 @@
 
     $raceid = $_GET['raceid'];
 
-    $stmt = $db->prepare("
+    $stmt = $sqlite->prepare("
         SELECT
             name,
             description,
             address,
             start,
             finish,
-            ST_X(gpscoords) as latitude,
-            ST_Y(gpscoords) as longitude,
+            latitude,
+            longitude,
             lap_length
         FROM
             races
-        WHERE id=?");
-    $stmt->bind_param("i", $raceid);
-    if ($stmt->execute()) {
-        $res = $stmt->get_result();
-        if ($row = $res->fetch_assoc()) {
+        WHERE id=:id");
+    $stmt->bindValue("id", $raceid);
+    if ($res = $stmt->execute()) {
+        if ($row = $res->fetchArray(SQLITE3_ASSOC)) {
             $name = $row["name"];
             $description = $row["description"];
             $address = $row["address"];
@@ -71,7 +68,6 @@
         } else {
             die("Unable to find race with the id {$raceid}");
         }
-        $res->close();
     } else {
         die("Unable to excecute query");
     }
@@ -81,7 +77,7 @@
     $masthead_text = $name;
 
     require '_header.php';
-    $now = new DateTime();
+    $now = new DateTime("now", new DateTimeZone('Europe/Copenhagen'));
 
 ?>
 

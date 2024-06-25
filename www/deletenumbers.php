@@ -14,8 +14,8 @@ foreach ($_POST['check'] as $id => $value)
 
 $sql = "DELETE FROM numbers WHERE id IN (" . implode(", ", $ids) . ")";
 
-if (!$db->query($sql))
-    $errorstring = "<h2>Unable to delete numbers. " . $db->error . "</h2>";
+if (!$sqlite->query($sql))
+    $errorstring = "<h2>Unable to delete numbers. " . $sqlite->lastErrorMsg() . "</h2>";
 ?>
 
 <? require '_header.php' ?>

@@ -23,10 +23,9 @@
         <a href="#">Races</a>
         <ul class="menu vertical">
 <?php
-    if ($res = $db->query('SELECT name, id from races ORDER BY start DESC LIMIT 10')) {
-        while ($row = $res->fetch_assoc())
+    if ($res = $sqlite->query('SELECT name, id from races ORDER BY start DESC LIMIT 10')) {
+        while ($row = $res->fetchArray(SQLITE3_ASSOC))
             printf('<li><a href="/listtimes.php?raceid=' . $row['id'] . '">' . $row['name'] . '</a></li>');
-        $res->close();
     }
 ?>
         </ul>

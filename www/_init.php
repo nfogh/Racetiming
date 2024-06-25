@@ -1,9 +1,17 @@
 <?php
-    $config = parse_ini_file('config/config.ini', true);
-    mysqli_report(MYSQLI_REPORT_OFF);
-    $db = @new mysqli($config['database']['host'], $config['database']['user'], $config['database']['password'], $config['database']['database']);
-    if (mysqli_connect_errno())
-        die('Unable to connect to database. Please update config.ini');
+$config = parse_ini_file('config/config.ini', true);
+
+if (!class_exists('MyDB')) {
+   class MyDB extends SQLite3 {
+      function __construct() {
+         $this->open('../db/database.db');
+      }
+   }
+   $sqlite = new MyDB();
+   if(!$sqlite) {
+      die("Unable to open database" + $sqlite->lastErrorMsg());
+   }
+}
 
     session_start();
 ?>

@@ -10,13 +10,13 @@ require '_header.php';
 ?>
 
 <?php
-$tid = mysqli_real_escape_string($db, htmlspecialchars($_POST["tid"]));
+$tid = sqlite_escape_string(htmlspecialchars($_POST["tid"]));
 
-$numberid = mysqli_real_escape_string($db, htmlspecialchars($_POST["numberid"]));
+$numberid = sqlite_escape_string(htmlspecialchars($_POST["numberid"]));
 
 $sql = "INSERT INTO tags (tid, numberid) VALUES ('" . $tid . "'," . $numberid . ")";
-if (!$db->query($sql)) {
-    printf("<h2>Unable to insert new tag. " . $db->error . "</h2> {$sql}.");
+if (!$sqlite->query($sql)) {
+    printf("<h2>Unable to insert new tag. " . $sqlite->lastErrorStr() . "</h2> {$sql}.");
 }
 else {
     printf("<h1>Inserted tag %s</h1>", $tid);
