@@ -4,11 +4,11 @@
         <div class="grid-x grid-padding-x">
             <div class="medium-6 cell">
                 <table>
-                    <tr><td>Race</td><td>Number</td><td>Name</td><td>TID</td><td>Select</td></tr>
+                    <tr><th>Race</th><th>Number</th><th>Name</th><th>TID</th><th>Select</th></tr>
                     <?php
                         if ($res = $sqlite->query("SELECT tags.numberid as numberid, tags.tid as tid, tags.id as id, numbers.number as number, numbers.raceid as raceid, numbers.runnerid as runnerid, runners.name as runnername, runners.surname as runnersurname, races.name as racename FROM tags JOIN numbers ON (numbers.id = tags.numberid) JOIN runners ON (runners.id = numbers.runnerid) JOIN races ON (races.id = numbers.raceid)")) {
                         
-                            while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+                            while ($row = $res->fetchArray()) {
                                 printf("<tr>");
                                 printf("<td>{$row['racename']}</td><td>{$row['number']}</td><td>{$row['runnername']} {$row['runnersurname']}</td><td>{$row['tid']}</td>\n");
                                 printf("<td><input type=checkbox name=check[{$row['id']}]></td>");
