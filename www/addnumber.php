@@ -10,23 +10,23 @@ require '_header.php';
 <?php
 if (empty($_POST['runnerid']))
     $errorstring  = 'The name ID the runner was not set';
-$runnerid = sqlite_escape_string(htmlspecialchars($_POST['runnerid']));
+$runnerid = SQLite3::escapeString(htmlspecialchars($_POST['runnerid']));
 
 if (empty($_POST['raceid']))
     $errorstring  = 'The name ID the race was not set';
-$raceid = sqlite_escape_string(htmlspecialchars($_POST['raceid']));
+$raceid = SQLite3::escapeString(htmlspecialchars($_POST['raceid']));
 
 if (empty($_POST['number']))
     $errorstring  = 'The number was not set';
-$number = sqlite_escape_string(htmlspecialchars($_POST['number']));
+$number = SQLite3::escapeString(htmlspecialchars($_POST['number']));
 
 if (empty($_POST['laps']))
     $errorstring  = 'The number of laps was not set';
-$laps = sqlite_escape_string(htmlspecialchars($_POST['laps']));
+$laps = SQLite3::escapeString(htmlspecialchars($_POST['laps']));
 
 if (empty($_POST['time']))
     $errorstring  = 'The expected time was not set';
-$time = sqlite_escape_string(htmlspecialchars($_POST['time']));
+$time = SQLite3::escapeString(htmlspecialchars($_POST['time']));
 
 $sql = "INSERT INTO numbers (raceid, runnerid, number, expected_laps, expected_time) VALUES ( {$raceid} , {$runnerid}, {$number}, {$laps}, {$time} )";
 if (!$sqlite->query($sql)) {

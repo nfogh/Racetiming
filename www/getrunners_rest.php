@@ -21,7 +21,7 @@ $stmt = $sqlite->prepare("
 $stmt->bindValue("apikey", $apikey);
 $stmt->bindValue("raceid", $raceid);
 if ($res = $stmt->execute()) {
-    if (!$res->fetchArray(SQLITE_ASSOC))
+    if (!$res->fetchArray())
         exit("{ \"addevent\": \"error permission denied\" }");
 } else {
     exit("{ \"addevent\": \"error {$sqlite->lastErrorMsg()}\" }");
@@ -55,7 +55,7 @@ $stmt->bindValue("raceid", $raceid);
 
 $data = array();
 if ($res = $stmt->execute()) {
-    while ($row = $res->fetchArray(SQLITE_ASSOC)) {
+    while ($row = $res->fetchArray()) {
         if (!is_null($row["tids"]))
             $row["tids"] = explode(",", $row["tids"]);
         $data[] = $row;

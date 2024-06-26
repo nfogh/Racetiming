@@ -3,14 +3,14 @@ require("_init.php");
 
 if (!isset($_GET['apikey']))
     exit("Missing apikey parameter");
-$apikey = sqlite_escape_string(htmlspecialchars($_GET["apikey"]));
+$apikey = SQLite3::escapeString(htmlspecialchars($_GET["apikey"]));
 
 if (!isset($_GET['raceid']))
     exit("Missing raceid parameter");
-$raceid = sqlite_escape_string(htmlspecialchars($_GET["raceid"]));
+$raceid = SQLite3::escapeString(htmlspecialchars($_GET["raceid"]));
 
 if ($res = $sqlite->query('SELECT permissions.raceid as raceid from permissions JOIN rest_api_keys ON (rest_api_keys.adminid = permissions.adminid) WHERE rest_api_keys.api_key = "' . $apikey . '" AND raceid=' . $raceid)) {
-    if (!($row = $res->fetchArray(SQLITE_ASSOC))) {
+    if (!($row = $res->fetchArray())) {
         printf('PERMISSION DENIED');
         exit();
     }
@@ -23,7 +23,7 @@ $sql = 'SELECT numbers.number as runnernumber, runners.name as runnername, runne
 $data = array();
 if ($res = $sqlite->query($sql)) {
     //printf('{"runners": [');
-    while ($row = $res->fetchArray(SQLITE_ASSOC)) {
+    while ($row = $res->fetchArray()) {
         $data[] = $row;
         //printf("{\n" .
         //    '"runnernumber":' . $row['runnernumber'] . ",\n" .

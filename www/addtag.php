@@ -10,13 +10,13 @@ require '_header.php';
 ?>
 
 <?php
-$tid = sqlite_escape_string(htmlspecialchars($_POST["tid"]));
+$tid = SQLite3::escapeString(htmlspecialchars($_POST["tid"]));
 
-$numberid = sqlite_escape_string(htmlspecialchars($_POST["numberid"]));
+$numberid = SQLite3::escapeString(htmlspecialchars($_POST["numberid"]));
 
 $sql = "INSERT INTO tags (tid, numberid) VALUES ('" . $tid . "'," . $numberid . ")";
 if (!$sqlite->query($sql)) {
-    printf("<h2>Unable to insert new tag. " . $sqlite->lastErrorStr() . "</h2> {$sql}.");
+    printf("<h2>Unable to insert new tag. " . $sqlite->lastErrorMsg() . "</h2> {$sql}.");
 }
 else {
     printf("<h1>Inserted tag %s</h1>", $tid);

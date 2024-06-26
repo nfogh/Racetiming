@@ -10,7 +10,7 @@ require '_header.php';
 <?php
 if (empty($_GET['raceid']))
     $errorstring  = 'The ID the race was not set';
-$raceid = sqlite_escape_string(htmlspecialchars($_GET['raceid']));
+$raceid = SQLite3::escapeString(htmlspecialchars($_GET['raceid']));
 
 $sql = "SELECT id from numbers WHERE numbers.raceid={$raceid}";
 if ($res = $sqlite->query($sql)) {

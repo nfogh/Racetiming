@@ -8,16 +8,16 @@ require '_adminpage.php';
 
 if (empty($_POST['name']))
     $errorstring  = 'The name of the runner was not set';
-$name = sqlite_escape_string(htmlspecialchars($_POST["name"]));
+$name = SQLite3::escapeString(htmlspecialchars($_POST["name"]));
 
 if (empty($_POST['surname']))
     $errorstring  = 'The surname of the runner was not set';
-$surname = sqlite_escape_string(htmlspecialchars($_POST["surname"]));
+$surname = SQLite3::escapeString(htmlspecialchars($_POST["surname"]));
 
 if (!isset($errorstring)) {
     $sql = 'INSERT INTO runners (name, surname) VALUES ("' . $name . '", "' . $surname . '")';
     if (!$sqlite->query($sql)) {
-        $errorstring = "Unable to insert new runner. " . $sqlite->lastErrorStr();
+        $errorstring = "Unable to insert new runner. " . $sqlite->lastErrorMsg();
     }
     else {
         $successstring = 'Inserted runner ' . $runnername;

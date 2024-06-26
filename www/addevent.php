@@ -10,19 +10,19 @@ require '_header.php';
 
 if (!isset($_POST['numberid']))
     exit("Missing numberid parameter");
-$numberid = sqlite_escape_string(htmlspecialchars($_POST["numberid"]));
+$numberid = SQLite3::escapeString(htmlspecialchars($_POST["numberid"]));
 
 if (!isset($_POST['timestamp']))
     exit("Missing timestamp parameter");
-$timestamp = sqlite_escape_string(htmlspecialchars($_POST["timestamp"]));
+$timestamp = SQLite3::escapeString(htmlspecialchars($_POST["timestamp"]));
 
 if (!isset($_POST['msecs']))
     exit("Missing msecs parameter");
-$msecs = sqlite_escape_string(htmlspecialchars($_POST["msecs"]));
+$msecs = SQLite3::escapeString(htmlspecialchars($_POST["msecs"]));
 
 if (!isset($_POST['event']))
     exit("Missing event parameter");
-$event = sqlite_escape_string(htmlspecialchars($_POST["event"]));
+$event = SQLite3::escapeString(htmlspecialchars($_POST["event"]));
 
 
 $sql = 'INSERT INTO events (numberid, timestamp, msecs, event) VALUES ("' . $numberid . '", "' . $timestamp . '", "' . $msecs . '", "' . $event . '")';

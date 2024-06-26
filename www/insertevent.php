@@ -10,7 +10,7 @@
                         <select name="numberid">
                             <?php
                                 if ($res = $sqlite->query("SELECT numbers.id as numberid, numbers.number as number, runners.name as runnername, runners.surname as runnersurname, races.name as racename FROM numbers JOIN runners ON (numbers.runnerid = runners.id) JOIN races ON (numbers.raceid = races.id)")) {
-                                    while ($row = $res->fetchArray(SQLITE_ASSOC))
+                                    while ($row = $res->fetchArray())
                                         printf("<option value='{$row['numberid']}'>{$row['racename']} - {$row['number']} - {$row['runnername']} {$row['runnersurname']}</option>");
                                 }
                             ?>

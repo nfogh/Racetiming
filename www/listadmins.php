@@ -5,7 +5,7 @@
 <?php
     if ($res = $sqlite->query("SELECT numbers.id as id, numbers.raceid as raceid, numbers.runnerid as runnerid, numbers.number as number, races.name as racename, runners.name as runnername FROM numbers JOIN races ON races.id = numbers.raceid JOIN runners ON runners.id = numbers.runnerid")) {
     
-        while ($row = $res->fetchArray(SQLITE_ASSOC))
+        while ($row = $res->fetchArray())
         {
             printf("<tr>");
             printf("<td>" . $row["racename"] . " [" . $row["raceid"] . "]</td>");

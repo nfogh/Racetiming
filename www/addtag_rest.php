@@ -23,10 +23,10 @@ $stmt->bindValue("apikey", $apikey);
 $stmt->bindValue("numberid", $numberid);
 if ($res = $stmt->execute()) {
     if (!$res->fetchArray(SQLITE3_ASSOC)) {
-        die('PERMISSION DENIED. ' . $sqlite->lastErrorStr());
+        die('PERMISSION DENIED. ' . $sqlite->lastErrorMsg());
     }
 } else {
-    exit("{ \"addevent\": \"error {$sqlite->lastErrorStr()}\" }");
+    exit("{ \"addevent\": \"error {$sqlite->lastErrorMsg()}\" }");
 }
 
 if (!isset($_POST['tid']))
@@ -39,6 +39,6 @@ $stmt->bindValue("tid", $tid);
 if ($stmt->execute()) {
     exit("{ \"addtag\": \"success\" }");
 } else {
-    exit("{ \"addtag\": \"error: {$sqlite->lastErrorStr()}\" }");
+    exit("{ \"addtag\": \"error: {$sqlite->lastErrorMsg()}\" }");
 }
 ?>

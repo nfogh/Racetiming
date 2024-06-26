@@ -9,7 +9,7 @@ $apikey = htmlspecialchars($_POST["apikey"]);
 if (!isset($_POST['numberid']))
     exit("{ \"addevent\": \"error: Missing numberid parameter\" }");
          
-$numberid = sqlite_escape_string(htmlspecialchars($_POST["numberid"]));
+$numberid = SQLite3::escapeString(htmlspecialchars($_POST["numberid"]));
 
 $sql = "
     SELECT 
@@ -30,17 +30,17 @@ if ($res = $sqlite->query($sql)) {
 
 if (!isset($_POST['timestamp']))
     exit("{ \"addevent\": \"error: Missing timestamp parameter\" }");
-$timestamp = sqlite_escape_string(htmlspecialchars($_POST["timestamp"]));
+$timestamp = SQLite3::escapeString(htmlspecialchars($_POST["timestamp"]));
 
 if (!isset($_POST['msecs']))
     exit("{ \"addevent\": \"error: Missing msecs parameter\" }");
 
-$msecs = sqlite_escape_string(htmlspecialchars($_POST["msecs"]));
+$msecs = SQLite3::escapeString(htmlspecialchars($_POST["msecs"]));
 
 if (!isset($_POST['event']))
     exit("{ \"addevent\": \"error: Missing event parameter\" }");
 
-$event = sqlite_escape_string(htmlspecialchars($_POST["event"]));
+$event = SQLite3::escapeString(htmlspecialchars($_POST["event"]));
 
 $sql = 'INSERT INTO events (numberid, timestamp, msecs, event) VALUES ("' . $numberid . '", "' . $timestamp . '", "' . $msecs . '", "' . $event . '")';
 if ($sqlite->query($sql)) {

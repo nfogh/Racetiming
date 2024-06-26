@@ -4,14 +4,15 @@
         <div class="grid-x grid-padding-x">
           <div class="medium-12 cell">
             <table>
-                <tr><td>Race</td><td>Runner</td><td>Number</td><td>Number of laps</td><td>Expected time [min]</td></tr>
+                <tr><th>Race</th><th>Runner</th><th>Number</th><th>Number of laps</th><th>Expected time [min]</th></tr>
                 <tr>
                     <td>
                         <select name="raceid">
                             <?php
-                                if ($res = $sqlite->query("SELECT id, name FROM races")) {
-                                    while ($row = $res->fetchArray(SQLITE_ASSOC))
+                                if ($res = $sqlite->query("SELECT id, name, start FROM races ORDER BY start DESC")) {
+                                    while ($row = $res->fetchArray()) {
                                         printf("<option value='{$row['id']}'>{$row['name']}</option>");
+                                    }
                                 }
                             ?>
                         </select>
@@ -20,8 +21,9 @@
                         <select name="runnerid">
                             <?php
                                 if ($res = $sqlite->query("SELECT id, name, surname FROM runners ORDER BY name")) {
-                                    while ($row = $res->fetchArray(SQLITE_ASSOC))
+                                    while ($row = $res->fetchArray()) {
                                         printf("<option value={$row['id']}>{$row['name']} {$row['surname']}</option>");
+                                    }
                                 }
                             ?>
                         </select>
